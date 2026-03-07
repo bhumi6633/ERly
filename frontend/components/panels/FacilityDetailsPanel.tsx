@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import { Cross2Icon, DrawingPinIcon } from "@radix-ui/react-icons";
 import { Phone, Clock, Navigation } from "lucide-react";
 import type { FacilityDetails } from "@/lib/types";
@@ -47,11 +47,10 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                         <div className="text-white/25 text-sm">Image unavailable</div>
                     </div>
                 ) : (
-                    <Image
+                    <img
                         src={staticImageUrl}
                         alt={`${facility.name} aerial view`}
-                        fill
-                        className={`object-cover transition-opacity duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                         onLoad={() => setImageLoaded(true)}
                         onError={() => setImageError(true)}
                     />

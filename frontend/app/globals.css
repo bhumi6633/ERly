@@ -312,3 +312,14 @@ button:disabled {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* Prevent Tailwind/tw-animate-css from interfering with Mapbox marker positioning */
+.mapboxgl-marker {
+  transition: none !important;
+  animation: none !important;
+}
+
+.mapboxgl-marker > div {
+  transition: none !important;
+  animation: none !important;
+}
