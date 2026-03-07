@@ -1,0 +1,24 @@
+# ERly API — Render Blueprint
+# Deploy: Render Dashboard → New → Blueprint → connect this repo
+# Backend + Postgres will be created; DATABASE_URL is auto-linked to the web service.
+
+databases:
+  - name: erly-db
+    plan: free
+    databaseName: erly
+
+services:
+  - type: web
+    name: erly-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    preDeployCommand: python seed.py
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: erly-db
+          property: connectionString
