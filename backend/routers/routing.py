@@ -83,6 +83,13 @@ def score_location(
     needed_specialties: list[str],
     severity: int,
 ) -> dict:
+    weights = {
+        "severity_fit": 0.35,
+        "specialty_match": 0.25,
+        "wait_score": 0.25,
+        "distance_score": 0.15,
+    }
+
     # 1. Severity fit — does this location type match the severity?
     loc_specialties = [s.specialty_name for s in location.specialties]
     care_types = preferred_care_types
@@ -103,11 +110,17 @@ def score_location(
     # 3. Wait time score (lower wait = higher score)
     status = location.live_status
     routing_wait = get_routing_wait_context(wait_snapshot, location.type, severity)
+    wait_evidence_available = False
     if routing_wait:
-        max_acceptable_wait = 150
         wait = routing_wait["wait_minutes"]
-        wait_score = max(0.0, 1.0 - wait / max_acceptable_wait)
+        if wait is None and routing_wait["status"] != "closed":
+            wait_score = None
+        else:
+            wait_evidence_available = True
+            max_acceptable_wait = 150
+            wait_score = max(0.0, 1.0 - (wait or 0) / max_acceptable_wait)
         if routing_wait["status"] == "closed":
+            wait_evidence_available = True
             wait_score *= 0.1
         elif routing_wait["status"] == "diverting":
             wait_score *= 0.45
@@ -120,18 +133,28 @@ def score_location(
         # Heavily penalise locations that are at capacity
         if status.capacity_score >= 0.95:
             wait_score *= 0.3
+        wait_evidence_available = True
     else:
-        wait_score = 0.5
+        wait_score = None
 
     # 4. Distance score (closer = higher score, max radius 25 km)
     distance_score = max(0.0, 1.0 - distance_km / MAX_RADIUS_KM)
 
-    # Composite
-    final = (
-        severity_fit * 0.35
-        + specialty_match * 0.25
-        + wait_score * 0.25
-        + distance_score * 0.15
+    score_components = {
+        "severity_fit": severity_fit,
+        "specialty_match": specialty_match,
+        "wait_score": wait_score,
+        "distance_score": distance_score,
+    }
+    active_weights = {
+        name: weights[name]
+        for name, value in score_components.items()
+        if value is not None
+    }
+    weight_total = sum(active_weights.values()) or 1.0
+    final = sum(
+        score_components[name] * (active_weights[name] / weight_total)
+        for name in active_weights
     )
 
     travel_time = round(distance_km / 0.5)  # rough: 30 km/h urban avg
@@ -155,6 +178,7 @@ def score_location(
         ),
         "wait_time_source": routing_wait["source_kind"] if routing_wait else None,
         "wait_time_status": routing_wait["status"] if routing_wait else None,
+        "wait_time_evidence_available": wait_evidence_available,
     }
 
 
@@ -211,6 +235,7 @@ def recommend(payload: RoutingRequest, db: Session = Depends(get_db)):
             "wait_time_confidence_label": scores.get("wait_time_confidence_label"),
             "wait_time_source": scores.get("wait_time_source"),
             "wait_time_status": scores.get("wait_time_status"),
+            "wait_time_evidence_available": scores.get("wait_time_evidence_available"),
         }
         persistence_scores = {
             key: value
@@ -233,6 +258,7 @@ def recommend(payload: RoutingRequest, db: Session = Depends(get_db)):
         rec_out.wait_time_confidence_label = wait_metadata["wait_time_confidence_label"]
         rec_out.wait_time_source = wait_metadata["wait_time_source"]
         rec_out.wait_time_status = wait_metadata["wait_time_status"]
+        rec_out.wait_time_evidence_available = wait_metadata["wait_time_evidence_available"]
         results.append(rec_out)
 
     db.commit()

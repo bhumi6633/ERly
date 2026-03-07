@@ -6,7 +6,18 @@ SOURCE_BASE_CONFIDENCE = {
     "public_aggregator": 0.84,
     "provider_api": 0.9,
     "ems_signal": 0.76,
+    "ontario_monthly_benchmark": 0.62,
+    "care_setting_proxy": 0.32,
+    "insufficient_evidence": 1.0,
     "estimation": 0.63,
+}
+
+CARE_SETTING_PROXY_FACTORS = {
+    "hospital": 1.0,
+    "er": 1.08,
+    "urgent_care": 0.58,
+    "clinic": 0.46,
+    "pharmacy": 0.22,
 }
 
 FACILITY_BASELINES = {

@@ -561,9 +561,11 @@ class EstimationProvider(WaitTimeSourceProvider):
 
 
 def default_providers() -> list[WaitTimeSourceProvider]:
-    return [
+    providers: list[WaitTimeSourceProvider] = [
         OfficialHospitalFeedProvider(),
         PublicAggregatorProvider(),
         EmsSignalProvider(),
-        EstimationProvider(),
     ]
+    if os.getenv("WAIT_TIME_ENABLE_SYNTHETIC", "").lower() in {"1", "true", "yes"}:
+        providers.append(EstimationProvider())
+    return providers

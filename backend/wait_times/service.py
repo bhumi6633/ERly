@@ -40,6 +40,29 @@ def weighted_average(values: list[tuple[float, float]]) -> float | None:
     return numerator / denominator
 
 
+def build_insufficient_evidence_signal(location: CareLocation, now: datetime) -> SourceSignal:
+    return SourceSignal(
+        source_kind="insufficient_evidence",
+        source_name="ERly evidence gate",
+        confidence_score=1.0,
+        freshness_minutes=0,
+        reported_at=as_utc_naive(now) or utc_now(),
+        status="insufficient_evidence",
+        wait_minutes=None,
+        wait_min_minutes=None,
+        wait_max_minutes=None,
+        scenarios=[],
+        metadata={
+            "evidence_tier": "insufficient_evidence",
+            "match_strategy": "none",
+            "reason": "No official/provider/public source with decision-grade wait evidence is configured for this location.",
+            "safety_policy": "Do not synthesize a numeric wait by default for emergency-routing decisions.",
+            "location_type": location.type,
+            "requires_adapter": True,
+        },
+    )
+
+
 def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
     ranked = sorted(
         signals,
@@ -101,6 +124,15 @@ def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
         overall_wait = None
         overall_lower = None
         overall_upper = None
+
+    if primary.source_kind == "insufficient_evidence":
+        overall_wait = None
+        overall_lower = None
+        overall_upper = None
+        capacity_score = 0.0
+        occupancy_probability = 0.0
+        diversion_probability = 0.0
+        queue_length = 0.0
 
     grouped_scenarios: dict[str, list[tuple[ScenarioSignal, float]]] = {}
     for signal, weight in weighted_signals:
@@ -225,6 +257,8 @@ def sync_live_status(db: Session, location: CareLocation, snapshot: WaitTimeSnap
     legacy_wait = snapshot.overall_wait_minutes
     if snapshot.status == "closed":
         legacy_wait = 480
+    elif snapshot.status == "insufficient_evidence":
+        legacy_wait = 0
     elif legacy_wait is None:
         legacy_wait = snapshot.overall_wait_max_minutes or 180
 
@@ -267,7 +301,7 @@ def refresh_wait_time_for_location(
             signals.append(signal)
 
     if not signals:
-        raise RuntimeError(f"No wait-time providers returned data for location {location.id}")
+        signals.append(build_insufficient_evidence_signal(location, now))
 
     fused = fuse_signals(signals)
     persist_snapshot(db, location, fused)
@@ -357,7 +391,7 @@ def get_routing_wait_context(snapshot: WaitTimeSnapshot | None, location_type: s
         wait_minutes = selected.wait_minutes or selected.wait_max_minutes or selected.wait_min_minutes
         probability_within_target = selected.probability_within_target
     if wait_minutes is None:
-        wait_minutes = snapshot.overall_wait_minutes or snapshot.overall_wait_max_minutes or 240
+        wait_minutes = snapshot.overall_wait_minutes or snapshot.overall_wait_max_minutes
 
     return {
         "wait_minutes": wait_minutes,

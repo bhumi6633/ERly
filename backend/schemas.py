@@ -173,6 +173,7 @@ class RoutingRecommendationOut(BaseModel):
     wait_time_confidence_label: Optional[str] = None
     wait_time_source: Optional[str] = None
     wait_time_status: Optional[str] = None
+    wait_time_evidence_available: Optional[bool] = None
     recommended: bool
     care_location: Optional[CareLocationOut] = None
 

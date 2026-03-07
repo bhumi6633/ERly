@@ -101,7 +101,7 @@ def run_demo() -> None:
         db.commit()
 
         print("ERly wait-time evidence demo")
-        print("Live fetches + source proofs + transparent heuristics")
+        print("Live fetches + source proofs + strict evidence gating")
         print(f"generated_at={datetime.now(timezone.utc).replace(microsecond=0).isoformat()}")
         print()
         _print_summary_table(locations, snapshots)
