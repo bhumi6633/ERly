@@ -13,20 +13,10 @@ export function isAuthConfigured(): boolean {
 }
 
 /**
- * Initiates Auth0 login redirect.
- * Only works when Auth0 env vars are configured.
+ * Re-export the useAuth0 hook for convenience.
+ * Use this hook in your components to access authentication state and methods.
+ * 
+ * Example:
+ * const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
  */
-export function loginWithAuth0(): void {
-    if (!isAuthConfigured()) {
-        console.warn("Auth0 not configured. Set AUTH0 env vars in .env.local.");
-        return;
-    }
-    window.location.href = "/api/auth/login";
-}
-
-/**
- * Logs out and redirects to landing page.
- */
-export function logout(): void {
-    window.location.href = "/api/auth/logout";
-}
+export { useAuth0 } from "@auth0/auth0-react";

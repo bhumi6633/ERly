@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { inter, playfair } from "@/lib/fonts";
 import "./globals.css";
+import { Auth0ProviderWrapper } from "@/components/auth0-provider";
 
 export const metadata: Metadata = {
   title: "ERly",
@@ -20,7 +21,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://events.mapbox.com" />
       </head>
       <body className="antialiased">
-        {children}
+        <Auth0ProviderWrapper>
+          {children}
+        </Auth0ProviderWrapper>
       </body>
     </html>
   );

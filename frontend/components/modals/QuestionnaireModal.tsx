@@ -31,10 +31,25 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
         severity: null,
         duration: null,
     });
+    const [showOtherInput, setShowOtherInput] = useState(false);
+    const [otherText, setOtherText] = useState("");
 
     const handleCategorySelect = (category: string) => {
         setData((prev) => ({ ...prev, category }));
-        setStep(1);
+        if (category === "other") {
+            setShowOtherInput(true);
+        } else {
+            setShowOtherInput(false);
+            setStep(1);
+        }
+    };
+
+    const handleOtherSubmit = () => {
+        if (otherText.trim()) {
+            setData((prev) => ({ ...prev, otherCategory: otherText.trim() }));
+            setShowOtherInput(false);
+            setStep(1);
+        }
     };
 
     const handleSeveritySelect = (severity: number) => {
@@ -90,6 +105,47 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                                     );
                                 })}
                             </div>
+                            
+                            {/* Other category textbox */}
+                            {showOtherInput && (
+                                <div className="mt-4 animate-fadeIn">
+                                    <label className="text-white/60 text-xs mb-2 block">
+                                        Please describe your concern:
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={otherText}
+                                        onChange={(e) => setOtherText(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && otherText.trim()) {
+                                                handleOtherSubmit();
+                                            }
+                                        }}
+                                        placeholder="E.g., skin rash, vision problems..."
+                                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2 mt-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowOtherInput(false);
+                                                setOtherText("");
+                                                setData((prev) => ({ ...prev, category: null }));
+                                            }}
+                                            className="px-4 py-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all text-xs"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleOtherSubmit}
+                                            disabled={!otherText.trim()}
+                                            className="flex-1 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-all text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            Continue
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

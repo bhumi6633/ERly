@@ -49,6 +49,28 @@ export const URGENCY_CONFIG: Record<
         border: "border-blue-500/30",
         icon: "💊",
     },
+    low: {
+        label: "Low Priority",
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/20",
+        border: "border-emerald-500/30",
+        icon: "🟢",
+    },
+    medium: {
+        label: "Medium Priority",
+        color: "text-amber-400",
+        bg: "bg-amber-500/20",
+        border: "border-amber-500/30",
+        icon: "🟡",
+    },
+    high: {
+        label: "High Priority",
+        color: "text-red-400",
+        bg: "bg-red-500/20",
+        border: "border-red-500/30",
+        icon: "🔴",
+        glow: true,
+    },
 };
 
 // ── Care Filter Definitions ──
