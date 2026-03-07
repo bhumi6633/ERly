@@ -47,10 +47,15 @@ export const TriageResultsPanel = memo(function TriageResultsPanel({
                 <div className="mt-2 text-xs text-white/40">
                     Recommended: <span className="text-white/70 font-medium">{result.careType}</span>
                 </div>
+                <div className="mt-3 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <p className="text-blue-300 text-xs leading-relaxed">
+                        <strong>Note:</strong> Facilities ranked by Care Access Time = optimal waiting time + proximity from your location
+                    </p>
+                </div>
             </div>
 
-            {/* Facilities List */}
-            <div className="flex-1 overflow-y-auto p-3">
+            {/* Facilities List - SCROLLABLE */}
+            <div className="flex-1 overflow-y-auto p-3 max-h-[400px]">
                 <div className="text-xs text-white/40 uppercase tracking-wider font-medium mb-2 px-1">
                     Nearby Facilities ({result.facilities.length})
                 </div>

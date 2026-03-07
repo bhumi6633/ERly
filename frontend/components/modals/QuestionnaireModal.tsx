@@ -33,6 +33,7 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
     });
     const [showOtherInput, setShowOtherInput] = useState(false);
     const [otherText, setOtherText] = useState("");
+    const [symptoms, setSymptoms] = useState("");
 
     const handleCategorySelect = (category: string) => {
         setData((prev) => ({ ...prev, category }));
@@ -58,8 +59,18 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
     };
 
     const handleDurationSelect = (duration: string) => {
-        const finalData = { ...data, duration };
-        setData(finalData);
+        const updatedData = { ...data, duration };
+        setData(updatedData);
+        setStep(3); // Go to symptoms step instead of completing
+    };
+
+    const handleSymptomsSubmit = () => {
+        const finalData = { ...data, symptoms: symptoms.trim() };
+        onComplete(finalData);
+    };
+
+    const handleSkipSymptoms = () => {
+        const finalData = { ...data, symptoms: "" };
         onComplete(finalData);
     };
 
@@ -71,7 +82,7 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                     <div>
                         <h2 className="text-white font-semibold text-lg">Quick Assessment</h2>
                         <p className="text-white/40 text-xs mt-0.5">
-                            Step {step + 1} of 3 — helps us find the right care
+                            Step {step + 1} of 4 — helps us find the right care
                         </p>
                     </div>
                     <button
@@ -206,6 +217,40 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                             </button>
                         </div>
                     )}
+
+                    {step === 3 && (
+                        <div className="animate-fadeIn">
+                            <p className="text-white/60 text-sm mb-4">Describe your symptoms (optional)</p>
+                            <textarea
+                                value={symptoms}
+                                onChange={(e) => setSymptoms(e.target.value)}
+                                placeholder="E.g., severe headache, fever, nausea..."
+                                className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors resize-none h-32"
+                                autoFocus
+                            />
+                            <div className="flex gap-2 mt-4">
+                                <button
+                                    onClick={() => setStep(2)}
+                                    className="text-white/30 hover:text-white/60 text-xs transition-colors"
+                                >
+                                    ← Back
+                                </button>
+                                <div className="flex-1" />
+                                <button
+                                    onClick={handleSkipSymptoms}
+                                    className="px-4 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all text-sm"
+                                >
+                                    Skip for now
+                                </button>
+                                <button
+                                    onClick={handleSymptomsSubmit}
+                                    className="px-6 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all text-sm font-semibold"
+                                >
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Progress bar */}
@@ -213,7 +258,7 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                     <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
                         <div
                             className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-500"
-                            style={{ width: `${((step + 1) / 3) * 100}%` }}
+                            style={{ width: `${((step + 1) / 4) * 100}%` }}
                         />
                     </div>
                 </div>

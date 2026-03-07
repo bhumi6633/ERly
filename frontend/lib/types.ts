@@ -30,6 +30,7 @@ export interface TriageFacility {
     waitTime?: string;
     address: string;
     coordinates: [number, number];
+    careAccessTime?: number;
 }
 
 /** Detailed info for a selected facility */
@@ -62,6 +63,7 @@ export interface QuestionnaireData {
     otherCategory?: string;
     severity: number | null;
     duration: string | null;
+    symptoms?: string;
 }
 
 /** Medical report for facility submission */

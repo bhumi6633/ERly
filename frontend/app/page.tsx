@@ -134,13 +134,22 @@ export default function Home() {
               Describe your symptoms and get matched with the best care
               option — from emergency rooms to telehealth.
             </p>
-            <button
-              onClick={handleMapNavigation}
-              className="group relative h-14 px-8 mx-auto rounded-full overflow-hidden bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-500 hover:scale-105 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 flex items-center justify-center gap-3 text-white font-semibold text-lg"
-            >
-              Get Started
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <button
+                onClick={handleMapNavigation}
+                className="group relative h-14 px-8 rounded-full overflow-hidden bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-500 hover:scale-105 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 flex items-center justify-center gap-3 text-white font-semibold text-lg"
+              >
+                Get Started
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => router.push("/map?erMap=true")}
+                className="group relative h-14 px-8 rounded-full overflow-hidden bg-red-600 hover:bg-red-500 transition-all duration-500 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 flex items-center justify-center gap-3 text-white font-semibold text-lg"
+              >
+                <Activity className="w-5 h-5" />
+                GO TO ER MAP w/ Wait Time
+              </button>
+            </div>
           </motion.div>
         </div>
       </div>

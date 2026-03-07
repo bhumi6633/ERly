@@ -11,6 +11,7 @@ interface FacilityDetailsPanelProps {
     onClose: () => void;
     accessToken: string;
     onShowRoute?: () => void;
+    showReportButton?: boolean;
 }
 
 export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
@@ -18,6 +19,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     onClose,
     accessToken,
     onShowRoute,
+    showReportButton = true,
 }: FacilityDetailsPanelProps) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -105,17 +107,19 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             <span>Call {facility.phone}</span>
                         </a>
                     )}
-                    <button 
-                        onClick={() => {
-                            if (onShowRoute) {
-                                onShowRoute();
-                            }
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all duration-200 text-sm font-semibold"
-                    >
-                        <Navigation size={16} />
-                        <span>REVIEW AND SUBMIT REPORT</span>
-                    </button>
+                    {showReportButton && (
+                        <button 
+                            onClick={() => {
+                                if (onShowRoute) {
+                                    onShowRoute();
+                                }
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all duration-200 text-sm font-semibold"
+                        >
+                            <Navigation size={16} />
+                            <span>REVIEW AND SUBMIT REPORT</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
