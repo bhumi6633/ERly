@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from database import engine, Base
-from routers import locations, triage, routing
+from routers import locations, triage, routing, speech_to_text
 import models  # noqa: F401 — ensures all models are registered before create_all
 import wait_times.models  # noqa: F401 — registers wait time tables before create_all
 from wait_times.router import router as wait_times_router
@@ -48,6 +48,7 @@ app.add_middleware(
 app.include_router(locations.router)
 app.include_router(triage.router)
 app.include_router(routing.router)
+app.include_router(speech_to_text.router)
 app.include_router(wait_times_router)
 
 

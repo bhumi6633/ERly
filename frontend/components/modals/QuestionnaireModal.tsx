@@ -1,8 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { Activity, Flame, HeartPulse, Brain, HelpCircle, ChevronRight, SkipForward } from "lucide-react";
+import { useState, useRef } from "react";
+import { Activity, Flame, HeartPulse, Brain, HelpCircle, ChevronRight, SkipForward, Mic, Square } from "lucide-react";
 import type { QuestionnaireData } from "@/lib/types";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+async function transcribeAudio(blob: Blob): Promise<string> {
+    const form = new FormData();
+    form.append("file", blob, "audio.webm");
+    const res = await fetch(`${API_URL}/speech-to-text`, {
+        method: "POST",
+        body: form,
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || "Transcription failed");
+    }
+    const data = await res.json();
+    return data.text ?? "";
+}
 
 interface QuestionnaireModalProps {
     onComplete: (data: QuestionnaireData) => void;
@@ -34,6 +51,11 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
     const [showOtherInput, setShowOtherInput] = useState(false);
     const [otherText, setOtherText] = useState("");
     const [symptoms, setSymptoms] = useState("");
+    const [isRecording, setIsRecording] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(false);
+    const [sttError, setSttError] = useState<string | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const chunksRef = useRef<Blob[]>([]);
 
     const handleCategorySelect = (category: string) => {
         setData((prev) => ({ ...prev, category }));
@@ -72,6 +94,48 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
     const handleSkipSymptoms = () => {
         const finalData = { ...data, symptoms: "" };
         onComplete(finalData);
+    };
+
+    const startRecording = async () => {
+        setSttError(null);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            chunksRef.current = [];
+            recorder.ondataavailable = (e) => {
+                if (e.data.size) chunksRef.current.push(e.data);
+            };
+            recorder.onstop = async () => {
+                stream.getTracks().forEach((t) => t.stop());
+                if (chunksRef.current.length === 0) {
+                    setIsRecording(false);
+                    return;
+                }
+                setIsTranscribing(true);
+                try {
+                    const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+                    const text = await transcribeAudio(blob);
+                    setSymptoms((prev) => (prev ? `${prev} ${text}` : text).trim());
+                } catch (err) {
+                    setSttError(err instanceof Error ? err.message : "Transcription failed");
+                } finally {
+                    setIsTranscribing(false);
+                }
+            };
+            recorder.start();
+            mediaRecorderRef.current = recorder;
+            setIsRecording(true);
+        } catch (err) {
+            setSttError(err instanceof Error ? err.message : "Microphone access denied");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current = null;
+            setIsRecording(false);
+        }
     };
 
     return (
@@ -221,13 +285,46 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                     {step === 3 && (
                         <div className="animate-fadeIn">
                             <p className="text-white/60 text-sm mb-4">Describe your symptoms (optional)</p>
-                            <textarea
-                                value={symptoms}
-                                onChange={(e) => setSymptoms(e.target.value)}
-                                placeholder="E.g., severe headache, fever, nausea..."
-                                className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors resize-none h-32"
-                                autoFocus
-                            />
+                            <div className="flex gap-2">
+                                <textarea
+                                    value={symptoms}
+                                    onChange={(e) => setSymptoms(e.target.value)}
+                                    placeholder="E.g., severe headache, fever, nausea... Or tap the mic to speak."
+                                    className="flex-1 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors resize-none h-32"
+                                    autoFocus
+                                />
+                                <div className="flex flex-col gap-1 items-center">
+                                    {!isRecording && !isTranscribing && (
+                                        <button
+                                            type="button"
+                                            onClick={startRecording}
+                                            className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 transition-all"
+                                            title="Record symptoms by voice"
+                                        >
+                                            <Mic size={22} />
+                                        </button>
+                                    )}
+                                    {isRecording && (
+                                        <button
+                                            type="button"
+                                            onClick={stopRecording}
+                                            className="p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30 transition-all animate-pulse"
+                                            title="Stop recording"
+                                        >
+                                            <Square size={20} fill="currentColor" />
+                                        </button>
+                                    )}
+                                    {isTranscribing && (
+                                        <div className="p-3 rounded-xl bg-white/10 flex items-center justify-center" title="Transcribing...">
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        </div>
+                                    )}
+                                    <span className="text-[10px] text-white/40">Speak</span>
+                                </div>
+                            </div>
+                            {sttError && (
+                                <p className="text-red-400/90 text-xs mt-2">{sttError}</p>
+                            )}
                             <div className="flex gap-2 mt-4">
                                 <button
                                     onClick={() => setStep(2)}
