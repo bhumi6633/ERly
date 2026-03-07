@@ -1,7 +1,7 @@
 // ── Shared TypeScript interfaces ──
 
 /** Urgency level assigned by triage */
-export type UrgencyLevel = "emergency" | "urgent" | "standard" | "self-care";
+export type UrgencyLevel = "emergency" | "urgent" | "standard" | "self-care" | "low" | "medium" | "high";
 
 /** Care facility filter categories */
 export type CareFilter =
@@ -59,6 +59,33 @@ export interface TriagePopupResult {
 /** Questionnaire answer data */
 export interface QuestionnaireData {
     category: string | null;
+    otherCategory?: string;
     severity: number | null;
     duration: string | null;
+}
+
+/** Medical report for facility submission */
+export interface MedicalReport {
+    patientInfo: {
+        timestamp: string;
+    };
+    assessment: {
+        category: string;
+        severity: number;
+        severityLabel: string;
+        duration: string;
+        symptoms: string;
+        urgencyLevel: UrgencyLevel;
+        urgencyLabel: string;
+    };
+    recommendation: {
+        careType: string;
+        summary: string;
+    };
+    selectedFacility: {
+        id: string;
+        name: string;
+        type: string;
+        address: string;
+    };
 }

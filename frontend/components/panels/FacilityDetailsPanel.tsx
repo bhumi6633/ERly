@@ -10,12 +10,14 @@ interface FacilityDetailsPanelProps {
     facility: FacilityDetails;
     onClose: () => void;
     accessToken: string;
+    onShowRoute?: () => void;
 }
 
 export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     facility,
     onClose,
     accessToken,
+    onShowRoute,
 }: FacilityDetailsPanelProps) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -103,9 +105,16 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             <span>Call {facility.phone}</span>
                         </a>
                     )}
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white transition-all duration-200 text-sm">
+                    <button 
+                        onClick={() => {
+                            if (onShowRoute) {
+                                onShowRoute();
+                            }
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all duration-200 text-sm font-semibold"
+                    >
                         <Navigation size={16} />
-                        <span>Get Directions</span>
+                        <span>REVIEW AND SUBMIT REPORT</span>
                     </button>
                 </div>
             </div>

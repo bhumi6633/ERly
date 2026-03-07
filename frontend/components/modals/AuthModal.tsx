@@ -1,7 +1,7 @@
 "use client";
 
 import { LogIn, UserRound } from "lucide-react";
-import { isAuthConfigured, loginWithAuth0 } from "@/lib/auth";
+import { isAuthConfigured, useAuth0 } from "@/lib/auth";
 
 interface AuthModalProps {
     onContinueAsGuest: () => void;
@@ -9,10 +9,11 @@ interface AuthModalProps {
 
 export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
     const authReady = isAuthConfigured();
+    const { loginWithRedirect } = useAuth0();
 
     const handleSignIn = () => {
         if (authReady) {
-            loginWithAuth0();
+            loginWithRedirect();
         }
     };
 

@@ -1,3 +1,6 @@
+from backboard_service import assess as backboard_assess
+from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -209,3 +212,66 @@ def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(alert)
     return alert
+
+
+class AssessPayload(BaseModel):
+    session_id:    int
+    patient_token: str
+    category:      str
+    severity:      str
+    duration:      str
+    custom_text:   Optional[str] = ""
+
+
+@router.post("/sessions/{session_id}/assess")
+async def assess_session(
+    session_id: int,
+    payload: AssessPayload,
+    db: Session = Depends(get_db),
+):
+    session = db.query(TriageSession).filter(TriageSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    result = await backboard_assess(
+        category      = payload.category,
+        severity      = payload.severity,
+        duration      = payload.duration,
+        custom_text   = payload.custom_text or "",
+        patient_token = payload.patient_token,
+    )
+
+    score     = result.get("priority_score", 5)
+    care      = result.get("care_level", "clinic")
+    report    = result.get("report", {})
+    ambulance = result.get("needs_ambulance", False)
+
+    session.severity_score        = score
+    session.recommended_care_type = care
+    session.clinical_summary      = report.get("chief_complaint", "")
+    session.needs_ambulance       = ambulance
+    session.main_symptom          = payload.category
+    session.current_status        = "completed"
+    db.commit()
+    db.refresh(session)
+
+    return {
+        "session_id":             session.id,
+        "priority_level":         result.get("priority_level"),
+        "priority_score":         score,
+        "care_level":             care,
+        "needs_ambulance":        ambulance,
+        "doctor_specialty":       result.get("doctor_specialty"),
+        "doctor_specialty_label": result.get("doctor_specialty_label"),
+        "pattern_alert":          result.get("pattern_alert"),
+        "report":                 report,
+        "patient_history":        result.get("patient_history", {}),
+        "routing_payload": {
+            "triage_session_id":     session.id,
+            "patient_latitude":      session.patient_latitude,
+            "patient_longitude":     session.patient_longitude,
+            "severity_score":        score,
+            "recommended_care_type": care,
+            "symptom_flags":         [],
+        }
+    }

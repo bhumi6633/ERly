@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { ArrowRight, MapPin, Clock, Stethoscope, Smartphone, Shield, Activity } from "lucide-react";
 import { MobileWarningModal } from "@/components/modals/MobileWarningModal";
 import { useMobileCheck } from "@/hooks/useMobileCheck";
+import { AuthButton } from "@/components/auth-button";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
@@ -88,6 +89,17 @@ export default function Home() {
 
   return (
     <div className="bg-black text-white relative min-h-screen">
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="w-6 h-6 text-emerald-400" />
+            <span className="text-xl font-semibold">ERly</span>
+          </div>
+          <AuthButton />
+        </div>
+      </nav>
+
       {/* Subtle gradient background */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -98,7 +110,7 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <div className="relative h-screen overflow-hidden z-10">
+      <div className="relative h-screen overflow-hidden z-10 pt-16">
         <div className="relative h-full flex flex-col items-center justify-center">
           <motion.div
             className="text-center max-w-4xl px-6"
