@@ -120,7 +120,7 @@ export const SearchBar = memo(function SearchBar({
             </button>
 
             {showDropdown && (
-              <div className="absolute top-full right-0 mt-2 glass rounded-xl p-3 z-30 min-w-70 animate-slideUp">
+              <div className="absolute bottom-full right-0 mb-2 glass rounded-xl p-3 z-30 min-w-70 animate-slideUp">
                 <div className="text-xs text-white/60 mb-2.5 px-1 font-medium tracking-wide uppercase">
                   Quick prompts
                 </div>
