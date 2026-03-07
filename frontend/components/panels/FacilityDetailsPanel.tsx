@@ -4,19 +4,7 @@ import { useState, memo } from "react";
 import Image from "next/image";
 import { Cross2Icon, DrawingPinIcon } from "@radix-ui/react-icons";
 import { Phone, Clock, Navigation } from "lucide-react";
-
-export interface FacilityDetails {
-    id: string;
-    name: string;
-    type: string;
-    address: string;
-    coordinates: [number, number];
-    phone?: string;
-    waitTime?: string;
-    distance?: string;
-    hours?: string;
-    rating?: number;
-}
+import type { FacilityDetails } from "@/lib/types";
 
 interface FacilityDetailsPanelProps {
     facility: FacilityDetails;

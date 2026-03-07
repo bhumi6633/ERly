@@ -25,7 +25,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
     const updateState = () => {
       setBearing(Math.round(map.getBearing()));
       setZoom(Math.round(map.getZoom() * 10) / 10);
-      setIs2D(map.getPitch() === 0);
+      setIs2D(map.getPitch() < 1);
     };
 
     map.on("move", updateState);
@@ -60,13 +60,15 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
 
   const handleToggle2D = useCallback(() => {
     if (!map) return;
-    const newIs2D = !is2D;
-    setIs2D(newIs2D);
+    // Read current pitch directly from map to avoid stale closure
+    const currentPitch = map.getPitch();
+    const shouldGoFlat = currentPitch > 1;
+    setIs2D(shouldGoFlat);
     map.easeTo({
-      pitch: newIs2D ? 0 : 60,
+      pitch: shouldGoFlat ? 0 : 45,
       duration: 500,
     });
-  }, [map, is2D]);
+  }, [map]);
 
   return (
     <Tooltip.Provider delayDuration={0}>
@@ -80,7 +82,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
               <Tooltip.Trigger asChild>
                 <button
                   onClick={handleZoomOut}
-                  className="p-3 text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                  className="p-3 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
                 >
                   <MinusIcon width={18} height={18} />
                 </button>
@@ -102,7 +104,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
               <Tooltip.Trigger asChild>
                 <button
                   onClick={handleZoomIn}
-                  className="p-3 text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                  className="p-3 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
                 >
                   <PlusIcon width={18} height={18} />
                 </button>
@@ -220,7 +222,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
               <kbd className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono text-[10px]">
                 Ctrl
               </kbd>{" "}
-              while dragging to up and down to change viewing angle.
+              while dragging up and down to change viewing angle.
             </p>
             <p className="text-white/70 text-xs leading-relaxed mb-3">
               Hold{" "}

@@ -2,30 +2,8 @@
 
 import React, { useRef, useEffect } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-
-interface TriagePopupResult {
-  urgency: "emergency" | "urgent" | "standard" | "self-care";
-  careType: string;
-  answer: string;
-  coordinates?: [number, number] | null;
-  should_fly_to: boolean;
-  zoom_level?: number | null;
-}
-
-function getUrgencyDisplay(urgency: string) {
-  switch (urgency) {
-    case "emergency":
-      return { icon: "🔴", label: "Emergency", color: "text-red-400" };
-    case "urgent":
-      return { icon: "🟡", label: "Urgent Care", color: "text-amber-400" };
-    case "standard":
-      return { icon: "🟢", label: "Non-Urgent", color: "text-emerald-400" };
-    case "self-care":
-      return { icon: "💊", label: "Self-Care", color: "text-blue-400" };
-    default:
-      return { icon: "ℹ️", label: "Assessment", color: "text-white/60" };
-  }
-}
+import { URGENCY_CONFIG } from "@/lib/constants";
+import type { TriagePopupResult } from "@/lib/types";
 
 interface SearchResultPopupProps {
   result: TriagePopupResult;
@@ -66,7 +44,7 @@ export const SearchResultPopup = React.memo(function SearchResultPopup({
     };
   }, [onClose]);
 
-  const urgency = getUrgencyDisplay(result.urgency);
+  const urgency = URGENCY_CONFIG[result.urgency];
 
   return (
     <div

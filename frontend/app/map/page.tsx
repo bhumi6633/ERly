@@ -1,53 +1,95 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Toolbar, type CareFilter } from "@/components/Toolbar";
-import { TriageResultsPanel, type TriageResult, type TriageFacility } from "@/components/panels/TriageResultsPanel";
-import { FacilityDetailsPanel, type FacilityDetails } from "@/components/panels/FacilityDetailsPanel";
-import { SearchBar } from "@/components/SearchBar";
-import { SearchResultPopup } from "@/components/SearchResultPopup";
-import { MapControls } from "@/components/MapControls";
 
-export default function MapPage() {
+import { Toolbar } from "@/components/map/Toolbar";
+import { SearchBar } from "@/components/map/SearchBar";
+import { SearchResultPopup } from "@/components/map/SearchResultPopup";
+import { MapControls } from "@/components/map/MapControls";
+import { TriageResultsPanel } from "@/components/panels/TriageResultsPanel";
+import { FacilityDetailsPanel } from "@/components/panels/FacilityDetailsPanel";
+import { AuthModal } from "@/components/modals/AuthModal";
+import { QuestionnaireModal } from "@/components/modals/QuestionnaireModal";
+
+import { MAP_CONFIG } from "@/lib/constants";
+import type {
+  CareFilter,
+  TriageResult,
+  TriageFacility,
+  FacilityDetails,
+  TriagePopupResult,
+  QuestionnaireData,
+} from "@/lib/types";
+
+// ── Flow Steps ──
+type FlowStep = "auth" | "questionnaire" | "map";
+
+function MapPageInner() {
+  const searchParams = useSearchParams();
+  const isWelcome = searchParams.get("welcome") === "true";
+
+  // ── Map refs ──
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
 
+  // ── Flow state ──
+  const [flowStep, setFlowStep] = useState<FlowStep>(
+    isWelcome ? "auth" : "map"
+  );
+  const [showToolbar, setShowToolbar] = useState(!isWelcome);
+
+  // ── UI state ──
   const [activeFilter, setActiveFilter] = useState<CareFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-
-  // Triage / search result state
-  const [searchResult, setSearchResult] = useState<{
-    urgency: "emergency" | "urgent" | "standard" | "self-care";
-    careType: string;
-    answer: string;
-    coordinates?: [number, number] | null;
-    should_fly_to: boolean;
-    zoom_level?: number | null;
-  } | null>(null);
-
-  // Panel state
+  const [searchResult, setSearchResult] = useState<TriagePopupResult | null>(null);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<FacilityDetails | null>(null);
 
-  // Search handler — placeholder for future API integration
+  // ── Flow handlers ──
+  const handleAuthComplete = useCallback(() => {
+    setFlowStep("questionnaire");
+  }, []);
+
+  const handleQuestionnaireComplete = useCallback((data: QuestionnaireData) => {
+    setFlowStep("map");
+    setShowToolbar(true);
+
+    // Set initial filter based on severity
+    if (data.severity && data.severity >= 4) {
+      setActiveFilter("er");
+    } else if (data.severity && data.severity >= 3) {
+      setActiveFilter("urgent");
+    }
+  }, []);
+
+  const handleQuestionnaireSkip = useCallback(() => {
+    setFlowStep("map");
+    setShowToolbar(true);
+  }, []);
+
+  // ── Search handler ──
   const handleSearch = useCallback(async () => {
-    if (!map.current || !searchQuery.trim()) return;
+    if (!mapRef.current || !searchQuery.trim()) return;
 
     setIsSearching(true);
+    setShowToolbar(true); // Show toolbar after first search
 
     try {
       // TODO: Replace with actual triage API call
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      const center = map.current.getCenter();
+      const center = mapRef.current.getCenter();
 
       const mockResult: TriageResult = {
         urgency: "urgent",
         careType: "Urgent Care",
-        summary: `Based on your symptoms, we recommend visiting an urgent care center. This does not appear to require emergency care, but should be evaluated promptly.`,
+        summary:
+          "Based on your symptoms, we recommend visiting an urgent care center. This does not appear to require emergency care, but should be evaluated promptly.",
         facilities: [
           {
             id: "1",
@@ -80,7 +122,6 @@ export default function MapPage() {
       };
 
       setTriageResult(mockResult);
-
       setSearchResult({
         urgency: mockResult.urgency,
         careType: mockResult.careType,
@@ -89,7 +130,6 @@ export default function MapPage() {
         should_fly_to: false,
         zoom_level: null,
       });
-
       setSearchQuery("");
     } catch (error) {
       console.error("Search error:", error);
@@ -98,73 +138,82 @@ export default function MapPage() {
     }
   }, [searchQuery]);
 
-  // Handle facility selection from triage panel
-  const handleFacilitySelect = useCallback(
-    (facility: TriageFacility) => {
-      setSelectedFacility({
-        id: facility.id,
-        name: facility.name,
-        type: facility.type,
-        address: facility.address,
-        coordinates: facility.coordinates,
-        waitTime: facility.waitTime,
-        distance: facility.distance,
-        phone: "(555) 123-4567",
-        hours: "Open 24/7",
-      });
+  // ── Facility selection ──
+  const handleFacilitySelect = useCallback((facility: TriageFacility) => {
+    setSelectedFacility({
+      id: facility.id,
+      name: facility.name,
+      type: facility.type,
+      address: facility.address,
+      coordinates: facility.coordinates,
+      waitTime: facility.waitTime,
+      distance: facility.distance,
+      phone: "(555) 123-4567",
+      hours: "Open 24/7",
+    });
 
-      if (map.current) {
-        map.current.flyTo({
-          center: facility.coordinates,
-          zoom: 16,
-          pitch: 60,
-          duration: 1500,
-        });
-      }
-    },
-    [],
-  );
-
-  // Initialize map — 3D dark mode by default
-  useEffect(() => {
-    if (map.current) return;
-
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-
-    if (mapContainer.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/standard",
-        projection: { name: "globe" },
-        center: [-73.985, 40.748],
-        zoom: 15,
-        pitch: 60,
-        bearing: -15,
-      });
-
-      map.current.on("style.load", () => {
-        if (!map.current) return;
-
-        map.current.setConfigProperty("basemap", "showPlaceLabels", true);
-        map.current.setConfigProperty("basemap", "showRoadLabels", true);
-        map.current.setConfigProperty("basemap", "showPointOfInterestLabels", true);
-        map.current.setConfigProperty("basemap", "lightPreset", "night");
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: facility.coordinates,
+        zoom: 16,
+        pitch: MAP_CONFIG.pitch,
+        duration: 1500,
       });
     }
   }, []);
 
+  // ── Map initialization ──
+  useEffect(() => {
+    if (mapRef.current) return;
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+    if (!mapContainer.current) return;
+
+    const map = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: MAP_CONFIG.style,
+      projection: { name: "globe" },
+      center: MAP_CONFIG.center,
+      zoom: MAP_CONFIG.zoom,
+      pitch: MAP_CONFIG.pitch,
+      bearing: MAP_CONFIG.bearing,
+    });
+
+    map.on("style.load", () => {
+      map.setConfigProperty("basemap", "showPlaceLabels", true);
+      map.setConfigProperty("basemap", "showRoadLabels", true);
+      map.setConfigProperty("basemap", "showPointOfInterestLabels", true);
+      map.setConfigProperty("basemap", "lightPreset", MAP_CONFIG.lightPreset);
+    });
+
+    map.on("load", () => {
+      mapRef.current = map;
+      setMapReady(true);
+    });
+
+    // Fallback — some Mapbox versions fire style.load before load
+    map.on("style.load", () => {
+      if (!mapRef.current) {
+        mapRef.current = map;
+        setMapReady(true);
+      }
+    });
+  }, []);
+
   return (
     <div className="relative h-screen w-full">
-      {/* Filter Toolbar */}
-      <Toolbar
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-      />
+      {/* ── Map Container ── */}
+      <div ref={mapContainer} className="h-full w-full" />
 
-      {/* Map Controls */}
-      <MapControls map={map.current} />
+      {/* ── Filter Toolbar (shown after questionnaire/search) ── */}
+      {showToolbar && flowStep === "map" && (
+        <Toolbar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+      )}
 
-      {/* Triage Results Panel (Left) */}
+      {/* ── Map Controls ── */}
+      {mapReady && <MapControls map={mapRef.current} />}
+
+      {/* ── Triage Results Panel (Left) ── */}
       {triageResult && (
         <TriageResultsPanel
           result={triageResult}
@@ -173,7 +222,7 @@ export default function MapPage() {
         />
       )}
 
-      {/* Facility Details Panel (Right) */}
+      {/* ── Facility Details Panel (Right) ── */}
       {selectedFacility && (
         <FacilityDetailsPanel
           facility={selectedFacility}
@@ -182,7 +231,7 @@ export default function MapPage() {
         />
       )}
 
-      {/* Search Result Popup */}
+      {/* ── Search Result Popup ── */}
       {searchResult && (
         <SearchResultPopup
           result={searchResult}
@@ -190,21 +239,42 @@ export default function MapPage() {
         />
       )}
 
-      {/* Search / Symptom Input Bar */}
-      <div
-        data-search-container
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 w-[min(500px,calc(100vw-2rem))] lg:w-125 xl:w-137.5 2xl:w-150 glass rounded-2xl px-4 py-2"
-      >
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSearch={handleSearch}
-          isLoading={isSearching}
-        />
-      </div>
+      {/* ── Search / Symptom Input Bar ── */}
+      {flowStep === "map" && (
+        <div
+          data-search-container
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 w-[min(500px,calc(100vw-2rem))] lg:w-125 xl:w-137.5 2xl:w-150 glass rounded-2xl px-4 py-2 animate-slideUp"
+        >
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSearch={handleSearch}
+            isLoading={isSearching}
+          />
+        </div>
+      )}
 
-      {/* Map Container */}
-      <div ref={mapContainer} className="h-full w-full" />
+      {/* ── Auth Modal ── */}
+      {flowStep === "auth" && (
+        <AuthModal onContinueAsGuest={handleAuthComplete} />
+      )}
+
+      {/* ── Questionnaire Modal ── */}
+      {flowStep === "questionnaire" && (
+        <QuestionnaireModal
+          onComplete={handleQuestionnaireComplete}
+          onSkip={handleQuestionnaireSkip}
+        />
+      )}
     </div>
+  );
+}
+
+// Wrap with Suspense for useSearchParams
+export default function MapPage() {
+  return (
+    <Suspense fallback={<div className="h-screen w-full bg-black" />}>
+      <MapPageInner />
+    </Suspense>
   );
 }

@@ -2,66 +2,14 @@
 
 import { memo } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-
-export type UrgencyLevel = "emergency" | "urgent" | "standard" | "self-care";
-
-export interface TriageResult {
-    urgency: UrgencyLevel;
-    careType: string;
-    summary: string;
-    facilities: TriageFacility[];
-}
-
-export interface TriageFacility {
-    id: string;
-    name: string;
-    type: string;
-    distance: string;
-    waitTime?: string;
-    address: string;
-    coordinates: [number, number];
-}
+import { URGENCY_CONFIG } from "@/lib/constants";
+import type { TriageResult, TriageFacility } from "@/lib/types";
 
 interface TriageResultsPanelProps {
     result: TriageResult;
     onClose: () => void;
     onFacilitySelect: (facility: TriageFacility) => void;
 }
-
-const URGENCY_CONFIG: Record<
-    UrgencyLevel,
-    { label: string; color: string; bg: string; border: string; icon: string; glow?: boolean }
-> = {
-    emergency: {
-        label: "Emergency",
-        color: "text-red-400",
-        bg: "bg-red-500/20",
-        border: "border-red-500/30",
-        icon: "🔴",
-        glow: true,
-    },
-    urgent: {
-        label: "Urgent",
-        color: "text-amber-400",
-        bg: "bg-amber-500/20",
-        border: "border-amber-500/30",
-        icon: "🟡",
-    },
-    standard: {
-        label: "Non-Urgent",
-        color: "text-emerald-400",
-        bg: "bg-emerald-500/20",
-        border: "border-emerald-500/30",
-        icon: "🟢",
-    },
-    "self-care": {
-        label: "Self-Care",
-        color: "text-blue-400",
-        bg: "bg-blue-500/20",
-        border: "border-blue-500/30",
-        icon: "💊",
-    },
-};
 
 export const TriageResultsPanel = memo(function TriageResultsPanel({
     result,

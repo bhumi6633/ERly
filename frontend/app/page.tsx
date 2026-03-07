@@ -82,7 +82,7 @@ export default function Home() {
     if (isMobile) {
       setShowMobileWarning(true);
     } else {
-      router.push("/map");
+      router.push("/map?welcome=true");
     }
   };
 
