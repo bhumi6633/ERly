@@ -14,7 +14,7 @@ interface MapControlsProps {
 }
 
 export const MapControls = memo(function MapControls({ map }: MapControlsProps) {
-  const [is2D, setIs2D] = useState(true);
+  const [is2D, setIs2D] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [zoom, setZoom] = useState(1.5);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -75,7 +75,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
         className="absolute right-4 bottom-8 z-20 flex flex-col-reverse items-end gap-2"
       >
         <div className="flex flex-row items-center gap-2">
-          <div className="flex flex-row items-center rounded-xl bg-black/40 backdrop-blur-md border border-white/10 overflow-hidden">
+          <div className="flex flex-row items-center rounded-xl glass overflow-hidden">
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
                 <button
@@ -86,7 +86,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
                 </button>
               </Tooltip.Trigger>
               <Tooltip.Content
-                className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+                className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
                 side="top"
                 sideOffset={5}
               >
@@ -108,7 +108,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
                 </button>
               </Tooltip.Trigger>
               <Tooltip.Content
-                className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+                className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
                 side="top"
                 sideOffset={5}
               >
@@ -121,17 +121,16 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
             <Tooltip.Trigger asChild>
               <button
                 onClick={handleToggle2D}
-                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all border ${
-                  is2D
+                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 border ${!is2D
                     ? "bg-white/20 text-white border-white/20"
                     : "bg-black/40 text-white/60 border-white/10 hover:text-white hover:bg-white/10"
-                } backdrop-blur-md`}
+                  } backdrop-blur-xl`}
               >
                 {is2D ? "2D" : "3D"}
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content
-              className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+              className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
               side="top"
               sideOffset={5}
             >
@@ -143,7 +142,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
             <Tooltip.Trigger asChild>
               <button
                 onClick={handleResetNorth}
-                className="relative p-2.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                className="relative p-2.5 rounded-xl glass text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
                 style={{ transform: `rotate(${-bearing}deg)` }}
               >
                 <svg
@@ -173,7 +172,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content
-              className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+              className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
               side="top"
               sideOffset={5}
             >
@@ -185,17 +184,16 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
             <Tooltip.Trigger asChild>
               <button
                 onClick={() => setShowShortcuts(!showShortcuts)}
-                className={`p-2.5 rounded-xl backdrop-blur-md border transition-all ${
-                  showShortcuts
+                className={`p-2.5 rounded-xl backdrop-blur-xl border transition-all duration-200 ${showShortcuts
                     ? "bg-white/20 text-white border-white/20"
-                    : "bg-black/40 text-white/60 border-white/10 hover:text-white hover:bg-white/10"
-                }`}
+                    : "bg-black/40 text-white/60 border-white/[0.08] hover:text-white hover:bg-white/10"
+                  }`}
               >
                 <InfoCircledIcon width={18} height={18} />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content
-              className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+              className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
               side="top"
               sideOffset={5}
             >
@@ -205,7 +203,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
         </div>
 
         {showShortcuts && (
-          <div className="p-4 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 max-w-70">
+          <div className="p-4 rounded-xl glass max-w-70 animate-slideUp">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-white font-semibold text-sm">
                 Keyboard shortcuts

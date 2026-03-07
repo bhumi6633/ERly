@@ -76,7 +76,7 @@ export const Toolbar = memo(function Toolbar({
 }: ToolbarProps) {
   return (
     <Tooltip.Provider delayDuration={0}>
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex flex-row items-center h-14 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 px-4 shadow-xl gap-1">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex flex-row items-center h-14 glass rounded-2xl px-2 gap-0.5 animate-slideUp">
         {FILTERS.map((filter) => (
           <Tooltip.Root key={filter.id}>
             <Tooltip.Trigger asChild>
@@ -84,9 +84,9 @@ export const Toolbar = memo(function Toolbar({
                 onClick={() =>
                   onFilterChange(activeFilter === filter.id ? "all" : filter.id)
                 }
-                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-all ${activeFilter === filter.id
-                  ? "bg-emerald-500/25 text-emerald-300 shadow-lg"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
+                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200 ${activeFilter === filter.id
+                    ? "bg-emerald-500/20 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                    : "text-white/50 hover:text-white hover:bg-white/8"
                   }`}
               >
                 {filter.icon}
@@ -96,12 +96,12 @@ export const Toolbar = memo(function Toolbar({
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content
-              className="select-none rounded-lg bg-black/80 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs font-medium text-white shadow-xl z-50"
+              className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
               side="bottom"
-              sideOffset={5}
+              sideOffset={8}
             >
               {filter.tooltip}
-              <Tooltip.Arrow className="fill-white/10" />
+              <Tooltip.Arrow className="fill-white/[0.08]" />
             </Tooltip.Content>
           </Tooltip.Root>
         ))}

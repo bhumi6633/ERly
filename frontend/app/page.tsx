@@ -156,8 +156,7 @@ export default function Home() {
             {FEATURES.map((feature) => (
               <motion.div
                 key={feature.title}
-                className={`rounded-2xl overflow-hidden relative group backdrop-blur-sm border border-white/5 p-6 ${feature.span || ""}`}
-                style={{ background: "rgba(15, 15, 15, 0.6)" }}
+                className={`rounded-2xl overflow-hidden relative group glass p-6 hover:scale-[1.02] transition-transform duration-300 ${feature.span || ""}`}
                 variants={fadeInUp}
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -193,8 +192,7 @@ export default function Home() {
             {STEPS.map((step, idx) => (
               <motion.div
                 key={step.num}
-                className="relative rounded-2xl overflow-hidden backdrop-blur-sm border border-white/5 group p-6"
-                style={{ background: "rgba(15, 15, 15, 0.5)" }}
+                className="relative rounded-2xl overflow-hidden glass group p-6 hover:scale-[1.02] transition-transform duration-300"
                 {...fadeInUp}
                 transition={{ delay: idx * 0.1 }}
               >

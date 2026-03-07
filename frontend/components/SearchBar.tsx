@@ -101,7 +101,7 @@ export const SearchBar = memo(function SearchBar({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="px-3.5 py-3.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-xl border border-white/10 transition-all duration-200 flex items-center justify-center"
+              className="px-3.5 py-3.5 bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white rounded-xl border border-white/[0.06] transition-all duration-200 flex items-center justify-center"
               disabled={isLoading}
             >
               <svg
@@ -120,7 +120,7 @@ export const SearchBar = memo(function SearchBar({
             </button>
 
             {showDropdown && (
-              <div className="absolute top-full right-0 mt-2 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 shadow-xl p-3 z-30 min-w-70 animate-[fadeIn_0.2s_ease-out_forwards]">
+              <div className="absolute top-full right-0 mt-2 glass rounded-xl p-3 z-30 min-w-70 animate-slideUp">
                 <div className="text-xs text-white/60 mb-2.5 px-1 font-medium tracking-wide uppercase">
                   Quick prompts
                 </div>
@@ -129,7 +129,7 @@ export const SearchBar = memo(function SearchBar({
                     <button
                       key={idx}
                       onClick={() => handlePromptClick(prompt)}
-                      className="px-3.5 py-2 text-sm bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg border border-white/10 transition-all duration-200 text-left"
+                      className="px-3.5 py-2 text-sm bg-white/[0.04] hover:bg-white/[0.08] text-white/60 hover:text-white rounded-lg border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 text-left"
                     >
                       {prompt}
                     </button>

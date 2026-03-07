@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Toolbar, type CareFilter } from "@/components/Toolbar";
-import { MapSettingsPanel } from "@/components/panels/MapSettingsPanel";
 import { TriageResultsPanel, type TriageResult, type TriageFacility } from "@/components/panels/TriageResultsPanel";
 import { FacilityDetailsPanel, type FacilityDetails } from "@/components/panels/FacilityDetailsPanel";
 import { SearchBar } from "@/components/SearchBar";
@@ -15,7 +14,6 @@ export default function MapPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
 
-  const [lightMode, setLightMode] = useState<"day" | "night">("day");
   const [activeFilter, setActiveFilter] = useState<CareFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -42,12 +40,10 @@ export default function MapPage() {
 
     try {
       // TODO: Replace with actual triage API call
-      // For now, simulate a response after a brief delay
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       const center = map.current.getCenter();
 
-      // Simulated triage result
       const mockResult: TriageResult = {
         urgency: "urgent",
         careType: "Urgent Care",
@@ -85,7 +81,6 @@ export default function MapPage() {
 
       setTriageResult(mockResult);
 
-      // Also show the popup
       setSearchResult({
         urgency: mockResult.urgency,
         careType: mockResult.careType,
@@ -122,7 +117,7 @@ export default function MapPage() {
         map.current.flyTo({
           center: facility.coordinates,
           zoom: 16,
-          pitch: 45,
+          pitch: 60,
           duration: 1500,
         });
       }
@@ -130,12 +125,7 @@ export default function MapPage() {
     [],
   );
 
-  // Toggle light mode
-  const handleToggleLightMode = useCallback(() => {
-    setLightMode((prev) => (prev === "day" ? "night" : "day"));
-  }, []);
-
-  // Initialize map
+  // Initialize map — 3D dark mode by default
   useEffect(() => {
     if (map.current) return;
 
@@ -147,9 +137,9 @@ export default function MapPage() {
         style: "mapbox://styles/mapbox/standard",
         projection: { name: "globe" },
         center: [-73.985, 40.748],
-        zoom: 12,
-        pitch: 0,
-        bearing: 0,
+        zoom: 15,
+        pitch: 60,
+        bearing: -15,
       });
 
       map.current.on("style.load", () => {
@@ -157,23 +147,11 @@ export default function MapPage() {
 
         map.current.setConfigProperty("basemap", "showPlaceLabels", true);
         map.current.setConfigProperty("basemap", "showRoadLabels", true);
-        map.current.setConfigProperty(
-          "basemap",
-          "showPointOfInterestLabels",
-          true,
-        );
-        map.current.setConfigProperty("basemap", "lightPreset", lightMode);
+        map.current.setConfigProperty("basemap", "showPointOfInterestLabels", true);
+        map.current.setConfigProperty("basemap", "lightPreset", "night");
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Update light mode on map when it changes
-  useEffect(() => {
-    if (map.current && map.current.isStyleLoaded()) {
-      map.current.setConfigProperty("basemap", "lightPreset", lightMode);
-    }
-  }, [lightMode]);
 
   return (
     <div className="relative h-screen w-full">
@@ -181,12 +159,6 @@ export default function MapPage() {
       <Toolbar
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
-      />
-
-      {/* Map Settings (Day/Night) */}
-      <MapSettingsPanel
-        lightMode={lightMode}
-        onToggleLightMode={handleToggleLightMode}
       />
 
       {/* Map Controls */}
@@ -221,14 +193,13 @@ export default function MapPage() {
       {/* Search / Symptom Input Bar */}
       <div
         data-search-container
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 w-[min(500px,calc(100vw-2rem))] lg:w-125 xl:w-137.5 2xl:w-150 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl px-4 py-2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 w-[min(500px,calc(100vw-2rem))] lg:w-125 xl:w-137.5 2xl:w-150 glass rounded-2xl px-4 py-2"
       >
         <SearchBar
           value={searchQuery}
           onChange={setSearchQuery}
           onSearch={handleSearch}
           isLoading={isSearching}
-          placeholder="Describe your symptoms..."
         />
       </div>
 
