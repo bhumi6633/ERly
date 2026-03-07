@@ -46,7 +46,7 @@ def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
         key=lambda signal: (
             signal.confidence_score,
             -signal.freshness_minutes,
-            signal.reported_at,
+            as_utc_naive(signal.reported_at),
         ),
         reverse=True,
     )
@@ -57,24 +57,34 @@ def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
         weight = signal.confidence_score * freshness_weight(signal.freshness_minutes)
         weighted_signals.append((signal, weight))
 
-    overall_wait = weighted_average([(signal.wait_minutes, weight) for signal, weight in weighted_signals])
-    overall_lower = weighted_average([(signal.wait_min_minutes, weight) for signal, weight in weighted_signals])
-    overall_upper = weighted_average([(signal.wait_max_minutes, weight) for signal, weight in weighted_signals])
-    capacity_score = weighted_average([
-        (signal.metadata.get("capacity_score"), weight) for signal, weight in weighted_signals
-    ]) or 0.0
-    occupancy_probability = weighted_average([
-        (signal.metadata.get("occupancy_probability"), weight) for signal, weight in weighted_signals
-    ]) or 0.0
-    diversion_probability = weighted_average([
-        (signal.metadata.get("diversion_probability"), weight) for signal, weight in weighted_signals
-    ]) or 0.0
-    queue_length = weighted_average([
-        (signal.metadata.get("queue_length"), weight) for signal, weight in weighted_signals
-    ]) or 0.0
-    confidence_score = weighted_average([
-        (signal.confidence_score, weight) for signal, weight in weighted_signals
-    ]) or primary.confidence_score
+    if primary.source_kind in {"official_hospital_feed", "provider_api"} and primary.wait_minutes is not None:
+        overall_wait = primary.wait_minutes
+        overall_lower = primary.wait_min_minutes
+        overall_upper = primary.wait_max_minutes
+        capacity_score = primary.metadata.get("capacity_score") or 0.0
+        occupancy_probability = primary.metadata.get("occupancy_probability") or 0.0
+        diversion_probability = primary.metadata.get("diversion_probability") or 0.0
+        queue_length = primary.metadata.get("queue_length") or 0.0
+        confidence_score = primary.confidence_score
+    else:
+        overall_wait = weighted_average([(signal.wait_minutes, weight) for signal, weight in weighted_signals])
+        overall_lower = weighted_average([(signal.wait_min_minutes, weight) for signal, weight in weighted_signals])
+        overall_upper = weighted_average([(signal.wait_max_minutes, weight) for signal, weight in weighted_signals])
+        capacity_score = weighted_average([
+            (signal.metadata.get("capacity_score"), weight) for signal, weight in weighted_signals
+        ]) or 0.0
+        occupancy_probability = weighted_average([
+            (signal.metadata.get("occupancy_probability"), weight) for signal, weight in weighted_signals
+        ]) or 0.0
+        diversion_probability = weighted_average([
+            (signal.metadata.get("diversion_probability"), weight) for signal, weight in weighted_signals
+        ]) or 0.0
+        queue_length = weighted_average([
+            (signal.metadata.get("queue_length"), weight) for signal, weight in weighted_signals
+        ]) or 0.0
+        confidence_score = weighted_average([
+            (signal.confidence_score, weight) for signal, weight in weighted_signals
+        ]) or primary.confidence_score
 
     status = primary.status
     if any(signal.status == "reported" for signal in ranked):
@@ -83,6 +93,14 @@ def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
         status = "closed"
     elif diversion_probability >= 0.7:
         status = "diverting"
+
+    if status == "closed" and not any(
+        signal.wait_minutes is not None and signal.status == "reported"
+        for signal in ranked
+    ):
+        overall_wait = None
+        overall_lower = None
+        overall_upper = None
 
     grouped_scenarios: dict[str, list[tuple[ScenarioSignal, float]]] = {}
     for signal, weight in weighted_signals:
@@ -118,7 +136,7 @@ def fuse_signals(signals: list[SourceSignal]) -> FusedWaitTime:
         )
 
     fused_scenarios.sort(key=lambda scenario: scenario.target_minutes)
-    latest_reported_at = max(signal.reported_at for signal in ranked)
+    latest_reported_at = max(as_utc_naive(signal.reported_at) for signal in ranked)
     return FusedWaitTime(
         source_kind=primary.source_kind,
         source_name=primary.source_name if len(ranked) == 1 else "ERly fused wait-time engine",
