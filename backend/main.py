@@ -1,6 +1,8 @@
 import os
-from fastapi import FastAPI
+import traceback
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from database import engine, Base
 from routers import locations, triage, routing
 import models  # noqa: F401 — ensures all models are registered before create_all
@@ -18,6 +20,20 @@ app = FastAPI(
     description="Healthcare triage routing backend for ERly (HackCanada 2026)",
     version="0.1.0",
 )
+
+
+@app.exception_handler(Exception)
+def catch_all(request: Request, exc: Exception):
+    """Return actual error in body so we can debug 500s."""
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal Server Error",
+            "error": str(exc),
+            "type": type(exc).__name__,
+            "path": str(request.url.path),
+        },
+    )
 
 app.add_middleware(
     CORSMiddleware,

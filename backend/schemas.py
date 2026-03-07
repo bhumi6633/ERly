@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Any
+from pydantic import BaseModel, ConfigDict, field_serializer
 
 
 # ── LiveStatus ────────────────────────────────────────────────────────────────
@@ -16,6 +16,16 @@ class LiveStatusOut(BaseModel):
     staffing_level: str
     ambulance_load: int
     last_updated_at: Optional[datetime] = None
+
+    @field_serializer("last_updated_at")
+    def serialize_dt(self, dt: Optional[datetime]) -> Optional[str]:
+        if dt is None:
+            return None
+        return dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
+
+    @field_serializer("capacity_score")
+    def serialize_float(self, v: Any) -> float:
+        return float(v) if v is not None else 0.0
 
 
 class LiveStatusUpdate(BaseModel):
@@ -48,11 +58,31 @@ class CareLocationOut(BaseModel):
     specialties: list[str] = []
     live_status: Optional[LiveStatusOut] = None
 
+    @field_serializer("latitude", "longitude")
+    def serialize_float(self, v: Any) -> float:
+        return float(v) if v is not None else 0.0
+
     @classmethod
     def from_orm_with_specialties(cls, location):
-        data = cls.model_validate(location)
-        data.specialties = [s.specialty_name for s in location.specialties]
-        return data
+        # Pass a dict so Pydantic sees specialties as list[str], not ORM objects
+        d = {
+            "id": location.id,
+            "name": location.name,
+            "type": location.type,
+            "address": location.address,
+            "city": location.city,
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+            "phone": location.phone,
+            "is_open_24_7": location.is_open_24_7,
+            "opening_time": location.opening_time,
+            "closing_time": location.closing_time,
+            "accepts_ambulance": location.accepts_ambulance,
+            "has_emergency_department": location.has_emergency_department,
+            "specialties": [s.specialty_name for s in location.specialties],
+            "live_status": location.live_status,
+        }
+        return cls.model_validate(d)
 
 
 # ── TriageSession ─────────────────────────────────────────────────────────────
