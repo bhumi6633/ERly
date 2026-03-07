@@ -32,6 +32,60 @@ app.include_router(triage.router)
 app.include_router(routing.router)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "ERly API",
+        "docs": "/docs",
+        "health": "/health",
+        "locations": "/locations/",
+        "seed": "/seed?secret=YOUR_SEED_SECRET (set SEED_SECRET in env first)",
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "ERly API"}
+
+
+@app.get("/health/db")
+def health_db():
+    """Check that the API can reach the database. Returns 200 if DB is up."""
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "database": "disconnected", "detail": str(e)},
+        )
+
+
+@app.get("/seed")
+@app.post("/seed")
+def run_seed(secret: str = "", reset: bool = False):
+    """
+    One-time seed for free tier (no Shell). Set SEED_SECRET in Render Environment,
+    then open in browser: /seed?secret=YOUR_SECRET  (add &reset=true to wipe and reseed).
+    """
+    from fastapi.responses import JSONResponse
+    expected = os.getenv("SEED_SECRET")
+    if not expected:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "error": "SEED_SECRET not set",
+                "hint": "In Render: erly-api → Environment → Add SEED_SECRET (any string), then call /seed?secret=that_value",
+            },
+        )
+    if not secret or secret != expected:
+        return JSONResponse(status_code=403, content={"error": "Invalid or missing secret"})
+    try:
+        from seed import seed as run_seed_script
+        run_seed_script(reset=reset)
+        return {"status": "ok", "message": "Seed completed. Check /locations/", "reset": reset}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": "Seed failed", "detail": str(e)})

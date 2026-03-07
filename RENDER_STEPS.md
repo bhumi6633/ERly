@@ -28,10 +28,13 @@ Do these in order. Your repo must already be on GitHub (with `render.yaml` and t
 
 1. Render will create **erly-db** first, then **erly-api**.
 2. On **erly-api**, it will **Build** then **Start**. Wait until status is **Live** (green). The first build can take a few minutes.
-3. **Seed the database once** (tables are created on startup, but data is not):
-   - Click **erly-api** → **Shell** tab.
-   - Run: `python seed.py`
-   - Exit the shell. The DB will now have all care locations.
+3. **Seed the database once** (tables exist but are empty; Shell is not available on free tier):
+   - **erly-api** → **Environment** → **Add Environment Variable**
+   - **Key:** `SEED_SECRET`  
+   - **Value:** any random string (e.g. `my-secret-seed-123`)
+   - Save (wait for redeploy).
+   - In your browser open: **https://erly-api.onrender.com/seed?secret=my-secret-seed-123** (use the same value you set).
+   - You should see `{"status":"ok","message":"Seed completed. Check /locations/"}`. Then **https://erly-api.onrender.com/locations/** will list all care locations.
 
 ---
 
@@ -40,7 +43,7 @@ Do these in order. Your repo must already be on GitHub (with `render.yaml` and t
 1. In the dashboard, click the **erly-api** service (not the database).
 2. At the top you’ll see the service URL, e.g. **https://erly-api.onrender.com**.
 3. Copy that URL — this is your **API base URL** for the frontend.
-4. Quick check: open **https://your-erly-api-url.onrender.com/health** in a browser. You should see: `{"status":"ok","service":"ERly API"}`.
+4. Quick check: open **https://erly-api.onrender.com/health** in a browser. You should see: `{"status":"ok","service":"ERly API"}`.
 
 ---
 
@@ -70,8 +73,10 @@ Do these in order. Your repo must already be on GitHub (with `render.yaml` and t
 
 | What | Where |
 |------|--------|
-| API base URL | **erly-api** → top of page (e.g. `https://erly-api.onrender.com`) |
-| Health check | `https://<your-erly-api-url>/health` |
+| **Live API** | **https://erly-api.onrender.com** |
+| API base URL | **erly-api** → top of page |
+| Health check | https://erly-api.onrender.com/health |
+| Interactive docs | https://erly-api.onrender.com/docs |
 | Set frontend URL for CORS | **erly-api** → **Environment** → `FRONTEND_ORIGIN` |
 | DB connection string | **erly-db** → **Info** / **Connect** → External Database URL |
 
@@ -79,8 +84,8 @@ Do these in order. Your repo must already be on GitHub (with `render.yaml` and t
 
 ## Reseed the production database (optional)
 
-If you want to wipe and refill the production DB (e.g. after changing `seed.py`):
+To wipe and refill (e.g. after changing `seed.py`), open in browser:
 
-1. **erly-api** → **Shell** tab.
-2. Run: `python seed.py --reset`
-3. Exit the shell. Data is reseeded.
+**https://erly-api.onrender.com/seed?secret=YOUR_SEED_SECRET&reset=true**
+
+(Use the same `SEED_SECRET` you set in Environment.)
