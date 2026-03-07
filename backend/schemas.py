@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Any
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
 
 # ── LiveStatus ────────────────────────────────────────────────────────────────
@@ -57,6 +57,15 @@ class CareLocationOut(BaseModel):
     has_emergency_department: bool
     specialties: list[str] = []
     live_status: Optional[LiveStatusOut] = None
+
+    @field_validator("specialties", mode="before")
+    @classmethod
+    def specialties_to_strings(cls, v: Any) -> list[str]:
+        if not v:
+            return []
+        if isinstance(v, list) and v and isinstance(v[0], str):
+            return v
+        return [getattr(s, "specialty_name", str(s)) for s in v]
 
     @field_serializer("latitude", "longitude")
     def serialize_float(self, v: Any) -> float:
