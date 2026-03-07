@@ -31,6 +31,7 @@ class CareLocation(Base):
     handoffs = relationship("Handoff", back_populates="care_location")
     alerts = relationship("Alert", back_populates="care_location")
     visit_outcomes = relationship("VisitOutcome", back_populates="care_location")
+    wait_time_snapshots = relationship("WaitTimeSnapshot", back_populates="care_location", cascade="all, delete-orphan")
 
 
 class LocationSpecialty(Base):

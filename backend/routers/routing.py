@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models import CareLocation, TriageSession, RoutingRecommendation
 from schemas import RoutingRequest, RoutingRecommendationOut, CareLocationOut
+from wait_times.service import ensure_latest_snapshots, get_routing_wait_context
 
 router = APIRouter(prefix="/routing", tags=["routing"])
 
@@ -76,6 +77,7 @@ def infer_needed_specialties(flags: list[dict]) -> list[str]:
 
 def score_location(
     location: CareLocation,
+    wait_snapshot,
     distance_km: float,
     preferred_care_types: list[str],
     needed_specialties: list[str],
@@ -100,7 +102,18 @@ def score_location(
 
     # 3. Wait time score (lower wait = higher score)
     status = location.live_status
-    if status:
+    routing_wait = get_routing_wait_context(wait_snapshot, location.type, severity)
+    if routing_wait:
+        max_acceptable_wait = 150
+        wait = routing_wait["wait_minutes"]
+        wait_score = max(0.0, 1.0 - wait / max_acceptable_wait)
+        if routing_wait["status"] == "closed":
+            wait_score *= 0.1
+        elif routing_wait["status"] == "diverting":
+            wait_score *= 0.45
+        if routing_wait["diversion_probability"] >= 0.65 and location.accepts_ambulance:
+            wait_score *= 0.6
+    elif status:
         max_acceptable_wait = 120
         wait = status.predicted_wait_on_arrival_mins or status.current_wait_mins or 0
         wait_score = max(0.0, 1.0 - wait / max_acceptable_wait)
@@ -126,10 +139,22 @@ def score_location(
     return {
         "distance_km": round(distance_km, 2),
         "travel_time_mins": travel_time,
-        "predicted_wait_mins": (status.predicted_wait_on_arrival_mins if status else None),
+        "predicted_wait_mins": (
+            routing_wait["wait_minutes"]
+            if routing_wait
+            else (status.predicted_wait_on_arrival_mins if status else None)
+        ),
         "specialty_match_score": round(specialty_match, 3),
         "severity_fit_score": round(severity_fit, 3),
         "final_score": round(final, 4),
+        "wait_time_confidence_score": (
+            round(routing_wait["confidence_score"], 3) if routing_wait else None
+        ),
+        "wait_time_confidence_label": (
+            routing_wait["confidence_label"] if routing_wait else None
+        ),
+        "wait_time_source": routing_wait["source_kind"] if routing_wait else None,
+        "wait_time_status": routing_wait["status"] if routing_wait else None,
     }
 
 
@@ -143,6 +168,7 @@ def recommend(payload: RoutingRequest, db: Session = Depends(get_db)):
         joinedload(CareLocation.specialties),
         joinedload(CareLocation.live_status),
     ).all()
+    latest_snapshots = ensure_latest_snapshots(db, locations)
 
     preferred_care_types = get_preferred_care_types(payload.severity_score)
     needed_specialties = infer_needed_specialties(
@@ -159,7 +185,14 @@ def recommend(payload: RoutingRequest, db: Session = Depends(get_db)):
         if dist > MAX_RADIUS_KM:
             continue
 
-        scores = score_location(loc, dist, preferred_care_types, needed_specialties, payload.severity_score)
+        scores = score_location(
+            loc,
+            latest_snapshots.get(loc.id),
+            dist,
+            preferred_care_types,
+            needed_specialties,
+            payload.severity_score,
+        )
         scored.append((loc, scores))
 
     # Sort by final_score descending
@@ -173,18 +206,33 @@ def recommend(payload: RoutingRequest, db: Session = Depends(get_db)):
 
     results = []
     for rank, (loc, scores) in enumerate(top, start=1):
+        wait_metadata = {
+            "wait_time_confidence_score": scores.get("wait_time_confidence_score"),
+            "wait_time_confidence_label": scores.get("wait_time_confidence_label"),
+            "wait_time_source": scores.get("wait_time_source"),
+            "wait_time_status": scores.get("wait_time_status"),
+        }
+        persistence_scores = {
+            key: value
+            for key, value in scores.items()
+            if key not in wait_metadata
+        }
         rec = RoutingRecommendation(
             triage_session_id=payload.triage_session_id,
             care_location_id=loc.id,
             rank_position=rank,
             recommended=(rank == 1),
-            **scores,
+            **persistence_scores,
         )
         db.add(rec)
         db.flush()
 
         rec_out = RoutingRecommendationOut.model_validate(rec)
         rec_out.care_location = CareLocationOut.from_orm_with_specialties(loc)
+        rec_out.wait_time_confidence_score = wait_metadata["wait_time_confidence_score"]
+        rec_out.wait_time_confidence_label = wait_metadata["wait_time_confidence_label"]
+        rec_out.wait_time_source = wait_metadata["wait_time_source"]
+        rec_out.wait_time_status = wait_metadata["wait_time_status"]
         results.append(rec_out)
 
     db.commit()

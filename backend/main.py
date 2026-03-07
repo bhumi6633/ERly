@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 from database import engine, Base
 from routers import locations, triage, routing
 import models  # noqa: F401 — ensures all models are registered before create_all
+import wait_times.models  # noqa: F401 — registers wait time tables before create_all
+from wait_times.router import router as wait_times_router
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -46,6 +48,7 @@ app.add_middleware(
 app.include_router(locations.router)
 app.include_router(triage.router)
 app.include_router(routing.router)
+app.include_router(wait_times_router)
 
 
 @app.get("/")
@@ -55,6 +58,7 @@ def root():
         "docs": "/docs",
         "health": "/health",
         "locations": "/locations/",
+        "wait_times": "/wait-times/",
         "seed": "/seed?secret=YOUR_SEED_SECRET (set SEED_SECRET in env first)",
     }
 

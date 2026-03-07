@@ -11,6 +11,8 @@ import sys
 from datetime import datetime, timezone
 from database import engine, SessionLocal, Base
 import models  # noqa: F401 — registers all models with Base
+import wait_times.models  # noqa: F401 — registers wait time models with Base
+from wait_times.service import refresh_wait_times_for_locations
 
 Base.metadata.create_all(bind=engine)
 
@@ -932,6 +934,9 @@ def seed(reset: bool = False):
                 print("Database already seeded — skipping. Use --reset to wipe and reseed.")
                 return
             # Wipe in order (FKs: references to care_locations first)
+            db.query(wait_times.models.WaitTimeScenario).delete()
+            db.query(wait_times.models.WaitTimeSourceRecord).delete()
+            db.query(wait_times.models.WaitTimeSnapshot).delete()
             db.query(models.RoutingRecommendation).delete()
             db.query(models.Handoff).delete()
             db.query(models.Alert).delete()
@@ -942,12 +947,15 @@ def seed(reset: bool = False):
             db.commit()
             db = SessionLocal()
 
-        for loc_data in CARE_LOCATIONS:
+        seeded_locations = []
+        for raw_loc_data in CARE_LOCATIONS:
+            loc_data = dict(raw_loc_data)
             specialties = loc_data.pop("specialties", [])
 
             location = models.CareLocation(**loc_data)
             db.add(location)
             db.flush()  # get the auto-generated id
+            seeded_locations.append(location)
 
             for specialty in specialties:
                 db.add(models.LocationSpecialty(
@@ -970,6 +978,8 @@ def seed(reset: bool = False):
                 last_updated_at=datetime.now(timezone.utc),
             ))
 
+        db.commit()
+        refresh_wait_times_for_locations(db, seeded_locations, force=True)
         db.commit()
         print(f"Seeded {len(CARE_LOCATIONS)} care locations with live status.")
     except Exception as exc:

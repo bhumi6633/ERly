@@ -169,6 +169,10 @@ class RoutingRecommendationOut(BaseModel):
     specialty_match_score: Optional[float]
     severity_fit_score: Optional[float]
     final_score: Optional[float]
+    wait_time_confidence_score: Optional[float] = None
+    wait_time_confidence_label: Optional[str] = None
+    wait_time_source: Optional[str] = None
+    wait_time_status: Optional[str] = None
     recommended: bool
     care_location: Optional[CareLocationOut] = None
 
