@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from wait_times.live_sources import (
     parse_medimap_status,
+    parse_sunnybrook_page,
     parse_thp_methodology,
     parse_thp_stats,
     parse_uhn_dashboard_text,
@@ -104,6 +105,21 @@ hours
 3/07/26 3:44 PM
 """
 
+SUNNYBROOK_PAGE = """
+<!DOCTYPE html>
+<html>
+<head><title>Emergency Department Wait Times | Sunnybrook</title></head>
+<body>
+<div class="sunnybrook-ed-waittimes">
+  <h2>Emergency Department Wait Times</h2>
+  <p>Current patients waiting: 31</p>
+  <p>Average wait time to see a doctor: 2 hours 25 minutes</p>
+  <p>Last updated: March 7, 2026 at 9:45 PM</p>
+</div>
+</body>
+</html>
+"""
+
 
 class WaitTimeSourceParsingTests(unittest.TestCase):
     def test_parse_thp_stats(self):
@@ -143,6 +159,20 @@ class WaitTimeSourceParsingTests(unittest.TestCase):
         self.assertEqual(tgh.waiting_patients, 22)
         self.assertEqual(tgh.being_treated_patients, 35)
         self.assertEqual(tgh.last_updated_text, "3/07/26 3:44 PM")
+
+    def test_parse_sunnybrook_page(self):
+        record = parse_sunnybrook_page(SUNNYBROOK_PAGE)
+        self.assertIsNotNone(record)
+        self.assertEqual(record.facility_name, "Sunnybrook Health Sciences Centre")
+        self.assertEqual(record.average_wait_minutes, 145)  # 2h 25m = 145 min
+        self.assertEqual(record.patients_waiting, 31)
+        self.assertIsNotNone(record.last_updated_text)
+        self.assertIsNotNone(record.evidence_sha256)
+        self.assertEqual(len(record.evidence_sha256), 64)
+
+    def test_parse_sunnybrook_page_returns_none_when_no_data(self):
+        record = parse_sunnybrook_page("<html><body>Under maintenance</body></html>")
+        self.assertIsNone(record)
 
 
 class WaitTimeFusionTests(unittest.TestCase):

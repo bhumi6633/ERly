@@ -41,6 +41,16 @@ MEDIMAP_LOCATION_REGISTRY = {
     },
 }
 
+SUNNYBROOK_ED_URL = "https://sunnybrook.ca/content/?page=emergency-dept-wait-times"
+
+SUNNYBROOK_LOCATION_REGISTRY = {
+    "Sunnybrook Health Sciences Centre": {
+        "facility_label": "Sunnybrook Health Sciences Centre",
+        "page_url": SUNNYBROOK_ED_URL,
+        "methodology_url": "https://sunnybrook.ca/content/?page=emergency-dept-wait-times",
+    },
+}
+
 
 @dataclass
 class ThpStatsRecord:
@@ -98,6 +108,21 @@ class UhnDashboardRecord:
     raw_block_text: str
     evidence_sha256: str
     screenshot_path: str | None = None
+
+
+@dataclass
+class SunnybrookRecord:
+    """
+    Parsed from Sunnybrook Health Sciences Centre ED wait times page.
+    Source: https://sunnybrook.ca/content/?page=emergency-dept-wait-times
+    """
+    facility_name: str
+    patients_waiting: int | None
+    average_wait_minutes: int | None
+    last_updated_text: str | None
+    raw_block_text: str
+    evidence_sha256: str
+    source_url: str
 
 
 def fetch_text(url: str, timeout_seconds: float = 20.0) -> str:
@@ -305,9 +330,94 @@ def parse_uhn_dashboard_text(body_text: str) -> dict[str, UhnDashboardRecord]:
     return results
 
 
-def _clean_html(value: str | None) -> str | None:
-    if value is None:
+def fetch_sunnybrook_ed() -> SunnybrookRecord | None:
+    """
+    Fetch and parse Sunnybrook ED wait time data from their public page.
+    Returns None on network failure or if no recognizable wait data is found.
+    Source: https://sunnybrook.ca/content/?page=emergency-dept-wait-times
+    """
+    try:
+        page_html = fetch_text(SUNNYBROOK_ED_URL)
+    except Exception:
         return None
+    return parse_sunnybrook_page(page_html)
+
+
+def parse_sunnybrook_page(page_html: str) -> SunnybrookRecord | None:
+    """
+    Parse Sunnybrook ED wait times from HTML.
+    Sunnybrook publishes ED wait time information at:
+    https://sunnybrook.ca/content/?page=emergency-dept-wait-times
+    Tries multiple pattern variants; returns None if no numeric evidence found.
+    """
+    text = re.sub(r"\r", "", page_html)
+
+    wait_minutes: int | None = None
+    patients_waiting: int | None = None
+    last_updated: str | None = None
+
+    # Pattern 1: "X hours Y minutes" near wait/doctor keyword (e.g., "2 hours 15 minutes")
+    hm_match = re.search(
+        r"(?:average\s+wait|wait\s+time|see\s+a\s+(?:doctor|physician))[^0-9<]{0,80}"
+        r"(\d{1,2})\s+hour[s]?\s+(\d{1,2})\s+minute[s]?",
+        text, re.I | re.S,
+    )
+    if hm_match:
+        wait_minutes = int(hm_match.group(1)) * 60 + int(hm_match.group(2))
+
+    # Pattern 2: clock format "X:YY hours" (e.g., "2:15 hours")
+    if wait_minutes is None:
+        clock_match = re.search(r"(\d{1,2}):(\d{2})\s*hour[s]?", text, re.I)
+        if clock_match:
+            wait_minutes = int(clock_match.group(1)) * 60 + int(clock_match.group(2))
+
+    # Pattern 3: "N minutes" explicitly stated near wait keyword
+    if wait_minutes is None:
+        min_match = re.search(
+            r"(?:average\s+wait|wait\s+time|current\s+wait)[^0-9<]{0,60}(\d{1,4})\s*min",
+            text, re.I | re.S,
+        )
+        if min_match:
+            wait_minutes = int(min_match.group(1))
+
+    # Pattern 4: patients waiting count
+    patients_match = re.search(
+        r"(?:(\d{1,4})\s+patients?\s+(?:currently\s+)?waiting|"
+        r"(?:patients?\s+waiting|waiting)[:\s]+(\d{1,4}))",
+        text, re.I,
+    )
+    if patients_match:
+        raw = patients_match.group(1) or patients_match.group(2)
+        if raw:
+            patients_waiting = int(raw)
+
+    # Pattern 5: last updated timestamp
+    updated_match = re.search(
+        r"(?:last\s+updated|as\s+of|updated)[:\s]+([A-Za-z0-9,: ]+(?:AM|PM|am|pm)?)",
+        text, re.I,
+    )
+    if updated_match:
+        last_updated = updated_match.group(1).strip()[:60]
+
+    # Build a compact raw block from stripped page text for evidence artifact
+    raw_block = re.sub(r"<[^>]+>", " ", text)
+    raw_block = re.sub(r"\s+", " ", raw_block).strip()[:600]
+
+    if wait_minutes is None and patients_waiting is None:
+        return None
+
+    return SunnybrookRecord(
+        facility_name="Sunnybrook Health Sciences Centre",
+        patients_waiting=patients_waiting,
+        average_wait_minutes=wait_minutes,
+        last_updated_text=last_updated,
+        raw_block_text=raw_block,
+        evidence_sha256=hashlib.sha256(raw_block.encode("utf-8")).hexdigest(),
+        source_url=SUNNYBROOK_ED_URL,
+    )
+
+
+def _clean_html(value: str | None) -> str | None:
     text = re.sub(r"<br\s*/?>", " ", value)
     text = re.sub(r"<[^>]+>", "", text)
     text = html.unescape(text)

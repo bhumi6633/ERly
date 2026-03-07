@@ -14,10 +14,17 @@ from wait_times.service import refresh_wait_times_for_locations
 
 
 DEMO_LOCATIONS = [
+    # ── GTA — live official feeds ───────────────────────────────────
     "Credit Valley Hospital",
     "Trillium Health Partners — Mississauga",
     "Bay-College Medical Centre",
     "Toronto General Hospital",
+    "Sunnybrook Health Sciences Centre",
+    "St. Michael's Hospital ER",
+    # ── Waterloo Region — benchmark / proxy fallback pipeline ─────────
+    "Grand River Hospital",
+    "Waterloo Walk-in Clinic — University Plaza",
+    "UW Campus Health Services",
 ]
 
 
@@ -86,6 +93,10 @@ def _trust_verdict(metadata: dict, record_status: str) -> str:
         return "public alias match"
     if evidence_tier == "transparent_heuristic":
         return "transparent heuristic fallback"
+    if evidence_tier == "provincial_benchmark":
+        return "ontario health provincial benchmark model (low confidence)"
+    if evidence_tier == "care_setting_proxy":
+        return "cihi-calibrated care-setting proxy (evidence floor, confidence 0.32)"
     return record_status
 
 

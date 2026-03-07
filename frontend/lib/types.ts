@@ -45,6 +45,66 @@ export interface FacilityDetails {
     distance?: string;
     hours?: string;
     rating?: number;
+    /** Backend DB location ID — present when the facility is a known seeded location */
+    locationId?: number;
+}
+
+// ── Wait Time Evidence Types ──────────────────────────────────────────────────
+
+export interface WaitTimeScenario {
+    scenario_code: string;
+    label: string;
+    wait_minutes: number | null;
+    wait_min_minutes: number | null;
+    wait_max_minutes: number | null;
+    target_minutes: number;
+    probability_within_target: number;
+    confidence_score: number;
+    notes: string | null;
+}
+
+export interface WaitTimeSourceRecord {
+    source_kind: string;
+    source_name: string;
+    status: string;
+    confidence_score: number;
+    freshness_minutes: number;
+    reported_at: string;
+    wait_minutes: number | null;
+    wait_min_minutes: number | null;
+    wait_max_minutes: number | null;
+    metadata_json: string | null;
+}
+
+export interface WaitTimeLocationSummary {
+    id: number;
+    name: string;
+    type: string;
+    city: string;
+    latitude: number;
+    longitude: number;
+}
+
+export interface WaitTimeSnapshot {
+    id: number;
+    care_location_id: number;
+    source_kind: string;
+    source_name: string;
+    status: string;
+    confidence_score: number;
+    confidence_label: string;
+    overall_wait_minutes: number | null;
+    overall_wait_min_minutes: number | null;
+    overall_wait_max_minutes: number | null;
+    capacity_score: number;
+    queue_length: number;
+    occupancy_probability: number;
+    diversion_probability: number;
+    last_reported_at: string;
+    created_at: string;
+    scenarios: WaitTimeScenario[];
+    source_records: WaitTimeSourceRecord[];
+    care_location: WaitTimeLocationSummary | null;
 }
 
 /** Popup result displayed after a search/triage */

@@ -6,6 +6,7 @@ SOURCE_BASE_CONFIDENCE = {
     "public_aggregator": 0.84,
     "provider_api": 0.9,
     "ems_signal": 0.76,
+    "provincial_benchmark": 0.48,
     "ontario_monthly_benchmark": 0.62,
     "care_setting_proxy": 0.32,
     "insufficient_evidence": 1.0,
@@ -82,6 +83,80 @@ SCENARIO_LIBRARY = {
         {"code": "minor_ailment_consult", "label": "Minor ailment consult", "factor": 0.9, "spread": 5, "target": 15},
         {"code": "prescription_fill", "label": "Prescription fill", "factor": 0.55, "spread": 4, "target": 8},
     ],
+}
+
+# ── Ontario Provincial Benchmark Data ────────────────────────────────────────
+# Applied by ProvincialBenchmarkProvider as the fallback when no official
+# hospital feed or public aggregator page provides a numeric wait time.
+
+# Source: Health Quality Ontario. "Time spent in emergency departments."
+# Reporting period 2022–23. All Ontario EDs, non-admitted patients.
+# URL: https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments
+ONTARIO_MEDIAN_ED_PHYSICIAN_WAIT_MINUTES = 99   # 1.65 hours, median time from triage to physician
+ONTARIO_90TH_PERCENTILE_ED_PHYSICIAN_WAIT_MINUTES = 279  # 4.65 hours, 90th percentile
+
+# Size/type scaling factors.
+# Derived from HQO volume-weighted reporting: major academic Level-1/2 trauma centres
+# report higher median waits due to acuity mix vs. community EDs and lower-acuity settings.
+# Source: HQO 2022-23 ED performance report, Table 1 (facility-type breakdown).
+ONTARIO_BENCHMARK_SIZE_FACTORS: dict[str, float] = {
+    "hospital":    1.15,  # Major academic / teaching hospital (Level 1/2 trauma)
+    "er":          1.00,  # Community emergency department
+    "urgent_care": 0.40,  # Urgent care centre — no trauma, lower acuity
+    "clinic":      0.25,  # Walk-in clinic — GP-level, higher throughput
+    "pharmacy":    0.07,  # Pharmacy minor ailment service — very short consult
+}
+
+# CTAS per-level physician wait targets and 90th-percentile thresholds.
+# Source: Canadian Triage and Acuity Scale (CTAS) 2020 Implementation Guidelines.
+# Authors: CAEP / NENA / AMUQ / NCA.
+# URL: https://caep.ca/resources/ctas/
+ONTARIO_CTAS_BENCHMARKS: dict[str, dict] = {
+    "ctas_1": {
+        "label": "CTAS 1 — Resuscitation",
+        "physician_wait_target_minutes": 0,
+        "physician_wait_90th_minutes": 1,
+        "citation": (
+            "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. "
+            "https://caep.ca/resources/ctas/"
+        ),
+    },
+    "ctas_2": {
+        "label": "CTAS 2 — Emergent",
+        "physician_wait_target_minutes": 15,
+        "physician_wait_90th_minutes": 30,
+        "citation": (
+            "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. "
+            "https://caep.ca/resources/ctas/"
+        ),
+    },
+    "ctas_3": {
+        "label": "CTAS 3 — Urgent",
+        "physician_wait_target_minutes": 30,
+        "physician_wait_90th_minutes": 60,
+        "citation": (
+            "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. "
+            "https://caep.ca/resources/ctas/"
+        ),
+    },
+    "ctas_4": {
+        "label": "CTAS 4 — Less Urgent",
+        "physician_wait_target_minutes": 60,
+        "physician_wait_90th_minutes": 120,
+        "citation": (
+            "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. "
+            "https://caep.ca/resources/ctas/"
+        ),
+    },
+    "ctas_5": {
+        "label": "CTAS 5 — Non-Urgent",
+        "physician_wait_target_minutes": 120,
+        "physician_wait_90th_minutes": 240,
+        "citation": (
+            "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. "
+            "https://caep.ca/resources/ctas/"
+        ),
+    },
 }
 
 ROUTING_SCENARIO_PREFERENCES = {

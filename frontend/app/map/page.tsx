@@ -201,11 +201,19 @@ function MapPageInner() {
     
     // Severity 4-5: 10 Emergency Rooms (High Priority)
     if (severity && severity >= 4) {
+      // Use real Toronto hospital names that match the seeded backend DB
+      // so the "View Evidence" panel can fetch live wait data for each
       const erNames = [
-        "Mount Sinai Hospital ER", "Lenox Hill Hospital ER", "NewYork-Presbyterian ER",
-        "NYU Langone ER", "Bellevue Hospital ER", "Mount Sinai West ER",
-        "Manhattan Eye & Ear ER", "Roosevelt Hospital ER", "St. Luke's Hospital ER",
-        "Columbia Presbyterian ER"
+        "Toronto General Hospital",
+        "St. Michael's Hospital ER",
+        "Sunnybrook Health Sciences Centre",
+        "Mount Sinai Hospital",
+        "SickKids Hospital",
+        "Credit Valley Hospital",
+        "Toronto Western Hospital",
+        "Humber River Hospital",
+        "North York General Hospital",
+        "Michael Garron Hospital",
       ];
       const coords = generateEvenlySpacedCoords(10, 0.018);
       
