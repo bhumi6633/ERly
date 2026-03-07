@@ -8,7 +8,7 @@
 4. Render will read `render.yaml` and create:
    - **erly-db** — Free PostgreSQL database (connection string is private to your account).
    - **erly-api** — Web service that runs the FastAPI app and gets `DATABASE_URL` from the database.
-5. Click **Apply**. Render builds and deploys. Tables are created on startup; `preDeployCommand` runs `python seed.py` so the DB is seeded with care locations on first deploy.
+5. Click **Apply**. Render builds and deploys. Tables are created on startup. Then **seed once**: in **erly-api** → **Shell**, run `python seed.py` so the DB gets all care locations.
 
 Your API will be at `https://erly-api.onrender.com` (or the URL Render shows).
 

@@ -27,11 +27,11 @@ Do these in order. Your repo must already be on GitHub (with `render.yaml` and t
 ## 3. Wait for the first deploy
 
 1. Render will create **erly-db** first, then **erly-api**.
-2. On **erly-api**, it will:
-   - **Build**: run `pip install -r requirements.txt` in the `backend/` folder.
-   - **Pre-deploy**: run `python seed.py` (seeds the database).
-   - **Start**: run `uvicorn main:app --host 0.0.0.0 --port $PORT`.
-3. Wait until **erly-api** status is **Live** (green). The first build can take a few minutes.
+2. On **erly-api**, it will **Build** then **Start**. Wait until status is **Live** (green). The first build can take a few minutes.
+3. **Seed the database once** (tables are created on startup, but data is not):
+   - Click **erly-api** → **Shell** tab.
+   - Run: `python seed.py`
+   - Exit the shell. The DB will now have all care locations.
 
 ---
 
