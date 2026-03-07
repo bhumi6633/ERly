@@ -13,7 +13,10 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./hackcanada.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Render Postgres requires SSL; add if not already in URL (only for non-local URLs)
 _is_sqlite = "sqlite" in DATABASE_URL
+if not _is_sqlite and "sslmode" not in DATABASE_URL and ("render.com" in DATABASE_URL or "onrender.com" in DATABASE_URL):
+    DATABASE_URL += "?sslmode=require" if "?" not in DATABASE_URL else "&sslmode=require"
 
 
 def _get_connect_args():

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models import CareLocation, LiveStatus
@@ -13,17 +14,23 @@ def list_locations(
     city: str | None = None,
     db: Session = Depends(get_db),
 ):
-    query = db.query(CareLocation).options(
-        joinedload(CareLocation.specialties),
-        joinedload(CareLocation.live_status),
-    )
-    if type:
-        query = query.filter(CareLocation.type == type)
-    if city:
-        query = query.filter(CareLocation.city.ilike(f"%{city}%"))
+    try:
+        query = db.query(CareLocation).options(
+            joinedload(CareLocation.specialties),
+            joinedload(CareLocation.live_status),
+        )
+        if type:
+            query = query.filter(CareLocation.type == type)
+        if city:
+            query = query.filter(CareLocation.city.ilike(f"%{city}%"))
 
-    locations = query.all()
-    return [CareLocationOut.from_orm_with_specialties(loc) for loc in locations]
+        locations = query.all()
+        return [CareLocationOut.from_orm_with_specialties(loc) for loc in locations]
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "error": str(e)},
+        )
 
 
 @router.get("/{location_id}", response_model=CareLocationOut)

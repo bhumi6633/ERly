@@ -15,7 +15,7 @@ class LiveStatusOut(BaseModel):
     queue_length: int
     staffing_level: str
     ambulance_load: int
-    last_updated_at: datetime
+    last_updated_at: Optional[datetime] = None
 
 
 class LiveStatusUpdate(BaseModel):
