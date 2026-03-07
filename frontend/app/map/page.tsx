@@ -393,10 +393,11 @@ function MapPageInner() {
       </svg>
     `;
 
-    // Create and add marker
     const marker = new mapboxgl.Marker({
       element: el,
       anchor: 'center',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
     })
       .setLngLat(currentCoords)
       .addTo(mapRef.current);
@@ -619,42 +620,37 @@ function MapPageInner() {
     clearMarkers();
 
     facilities.forEach((facility) => {
-      // Create a custom red marker element
       const el = document.createElement('div');
       el.className = 'facility-marker';
-      el.style.position = 'relative';
-      el.style.width = '32px';
-      el.style.height = facility.type === 'Emergency Room' ? '60px' : '32px'; // More height for ER with cloud
       el.style.cursor = 'pointer';
-      
-      // For Emergency Rooms, add wait time cloud above pin
+
       if (facility.type === 'Emergency Room') {
+        el.style.display = 'flex';
+        el.style.flexDirection = 'column';
+        el.style.alignItems = 'center';
+        el.style.width = 'max-content';
         el.innerHTML = `
-          <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: max-content;">
-            <div style="
-              background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
-              color: white;
-              padding: 4px 10px;
-              border-radius: 8px;
-              font-size: 11px;
-              font-weight: 600;
-              white-space: nowrap;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-              border: 1px solid rgba(255,255,255,0.2);
-            ">
-              ${facility.waitTime}
-            </div>
-            <div style="
-              width: 0;
-              height: 0;
-              border-left: 5px solid transparent;
-              border-right: 5px solid transparent;
-              border-top: 6px solid rgba(185, 28, 28, 0.95);
-              margin: 0 auto;
-              filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
-            "></div>
+          <div style="
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+          ">
+            ${facility.waitTime}
           </div>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; bottom: 0; left: 0;">
+          <div style="
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid rgba(185, 28, 28, 0.95);
+          "></div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
                   fill="#EF4444" 
                   stroke="#991B1B" 
@@ -662,7 +658,8 @@ function MapPageInner() {
           </svg>
         `;
       } else {
-        // Regular red pin for non-ER facilities
+        el.style.width = '32px';
+        el.style.height = '32px';
         el.innerHTML = `
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
@@ -673,10 +670,11 @@ function MapPageInner() {
         `;
       }
 
-      // Create marker and add to map
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: 'bottom',
+        pitchAlignment: 'map',
+        rotationAlignment: 'map',
       })
         .setLngLat(facility.coordinates)
         .addTo(mapRef.current!);
