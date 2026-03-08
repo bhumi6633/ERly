@@ -9,45 +9,97 @@ interface ReportSuccessModalProps {
 }
 
 export function ReportSuccessModal({ facilityName, onClose, onGoHome }: ReportSuccessModalProps) {
-    const trackingId = `ER-${Date.now().toString().slice(-8)}`;
+    const token = Math.floor(10 + Math.random() * 90);
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn">
             <div className="glass rounded-[28px] max-w-sm w-full mx-4 overflow-hidden animate-slideUp">
 
-                {/* Header */}
-                <div className="px-7 pt-8 pb-6 border-b border-white/[0.07]">
-                    <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40 mb-5">
+                {/* Token Hero — top of card */}
+                <div className="relative px-5 pt-6 pb-5 border-b border-white/[0.07] overflow-hidden">
+                    {/* Intense ambient glow */}
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-72 h-36 bg-emerald-500/30 blur-3xl rounded-full pointer-events-none animate-pulse" />
+
+                    <div className="relative text-[10px] uppercase tracking-[0.35em] font-bold text-white/30 mb-4 px-2">
                         ERly · Submitted
                     </div>
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-9 h-9 rounded-full bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shrink-0">
-                            <Check size={16} className="text-emerald-400" strokeWidth={2.5} />
+
+                    {/* Token card */}
+                    <div className="relative rounded-2xl overflow-hidden">
+                        {/* Layered backgrounds */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950 via-[#001a0d] to-black" />
+                        {/* Grid texture */}
+                        <div
+                            className="absolute inset-0 opacity-[0.06] pointer-events-none"
+                            style={{
+                                backgroundImage:
+                                    "linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)",
+                                backgroundSize: "22px 22px",
+                            }}
+                        />
+                        {/* Radial glow behind number */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_52%,rgba(16,185,129,0.22),transparent_70%)]" />
+                        <div className="absolute inset-0 border border-emerald-500/30 rounded-2xl" />
+
+                        {/* Corner brackets */}
+                        <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-emerald-400/35 rounded-tl-sm" />
+                        <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-emerald-400/35 rounded-tr-sm" />
+                        <div className="absolute bottom-[52px] left-3 w-5 h-5 border-b-2 border-l-2 border-emerald-400/35 rounded-bl-sm" />
+                        <div className="absolute bottom-[52px] right-3 w-5 h-5 border-b-2 border-r-2 border-emerald-400/35 rounded-br-sm" />
+
+                        <div className="relative px-6 pt-5 pb-0">
+                            {/* Label row */}
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[8px] uppercase tracking-[0.45em] font-black text-emerald-400/50">
+                                    Token No.
+                                </span>
+                                <div className="flex gap-1.5 items-center">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    <div className="w-1 h-1 rounded-full bg-emerald-400/40" />
+                                    <div className="w-1 h-1 rounded-full bg-emerald-400/20" />
+                                </div>
+                            </div>
+
+                            {/* Giant glowing token number */}
+                            <div className="flex items-center justify-center py-4">
+                                <span
+                                    className="text-emerald-400 font-mono text-[88px] font-black tabular-nums leading-none"
+                                    style={{
+                                        textShadow:
+                                            "0 0 30px rgba(16,185,129,0.7), 0 0 70px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15)",
+                                    }}
+                                >
+                                    {token}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <div className="text-white font-semibold text-base leading-tight">Report sent</div>
-                            <div className="text-white/45 text-xs mt-0.5">Pre-registered at facility</div>
+
+                        {/* Dashed ticket tear line + hint */}
+                        <div className="relative border-t border-dashed border-emerald-500/25 mx-0">
+                            <div className="absolute -left-2 -top-2 w-4 h-4 rounded-full bg-black/60" />
+                            <div className="absolute -right-2 -top-2 w-4 h-4 rounded-full bg-black/60" />
+                            <p className="text-center text-emerald-500/45 text-[9px] uppercase tracking-[0.5em] font-black py-3.5 px-4">
+                                Show · Front Desk · Screenshot
+                            </p>
                         </div>
-                    </div>
-                    <div className="text-white/60 text-sm leading-relaxed">
-                        Your intake report has been forwarded to{" "}
-                        <span className="text-white font-medium">{facilityName}</span>.
-                        Head there now — staff will have your information ready.
                     </div>
                 </div>
 
-                {/* Tracking info */}
-                <div className="px-7 py-5 space-y-3 border-b border-white/[0.07]">
-                    <div>
-                        <div className="text-[9px] uppercase tracking-[0.25em] font-bold text-white/35 mb-1.5">
-                            Tracking ID
+                {/* Status + message */}
+                <div className="px-7 pt-5 pb-6 border-b border-white/[0.07]">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shrink-0">
+                            <Check size={14} className="text-emerald-400" strokeWidth={2.5} />
                         </div>
-                        <code className="text-emerald-400 font-mono text-sm">{trackingId}</code>
+                        <div>
+                            <div className="text-white font-semibold text-sm leading-tight">Report sent</div>
+                            <div className="text-white/40 text-xs mt-0.5">Pre-registered at facility</div>
+                        </div>
                     </div>
-                    <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                        <p className="text-white/45 text-[11px] leading-relaxed">
-                            Present this ID at the front desk if asked. Keep a screenshot for your records.
-                        </p>
+                    <div className="text-white/55 text-sm leading-relaxed">
+                        Your intake report has been forwarded to{" "}
+                        <span className="text-white font-semibold">{facilityName}</span>.
+                        Head there now and staff will have your information ready!
                     </div>
                 </div>
 

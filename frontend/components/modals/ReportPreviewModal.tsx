@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { FileText, Send } from "lucide-react";
+import { FileText, Send, Clock, Activity, ShieldAlert, MapPin, ArrowRight } from "lucide-react";
 import type { MedicalReport } from "@/lib/types";
 
 interface ReportPreviewModalProps {
@@ -11,7 +11,6 @@ interface ReportPreviewModalProps {
     onCancel: () => void;
 }
 
-const SEVERITY_LABELS = ["", "Mild", "Minor", "Moderate", "Severe", "Critical"];
 const DURATION_LABELS: Record<string, string> = {
     now: "Just now",
     hours: "A few hours",
@@ -19,12 +18,25 @@ const DURATION_LABELS: Record<string, string> = {
     weeks: "A week or more",
 };
 
+const SEVERITY_BAR_COLORS = ["bg-emerald-400", "bg-lime-400", "bg-yellow-400", "bg-orange-400", "bg-red-400"];
+
+function getUrgencyStyle(label: string) {
+    const l = label.toLowerCase();
+    if (l.includes("critical") || l.includes("emergency"))
+        return { text: "text-red-400", bg: "bg-red-400/10", border: "border-red-400/25", dot: "bg-red-400", accentColor: "#ef4444", cardBg: "bg-red-500/[0.03]" };
+    if (l.includes("high"))
+        return { text: "text-orange-400", bg: "bg-orange-400/10", border: "border-orange-400/25", dot: "bg-orange-400", accentColor: "#f97316", cardBg: "bg-orange-500/[0.03]" };
+    if (l.includes("medium") || l.includes("moderate"))
+        return { text: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/25", dot: "bg-yellow-400", accentColor: "#eab308", cardBg: "bg-yellow-500/[0.03]" };
+    return { text: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/25", dot: "bg-emerald-400", accentColor: "#10b981", cardBg: "bg-emerald-500/[0.03]" };
+}
+
 export function ReportPreviewModal({ report, onConfirm, onCancel }: ReportPreviewModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const urgencyStyle = getUrgencyStyle(report.assessment.urgencyLabel);
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-        // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1500));
         onConfirm();
     };
@@ -32,6 +44,7 @@ export function ReportPreviewModal({ report, onConfirm, onCancel }: ReportPrevie
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn p-4">
             <div className="glass rounded-[32px] max-w-2xl w-full max-h-[88vh] overflow-hidden animate-slideUp flex flex-col">
+
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 sm:px-8 py-6 border-b border-white/[0.08] shrink-0">
                     <div className="flex items-center gap-4">
@@ -52,74 +65,114 @@ export function ReportPreviewModal({ report, onConfirm, onCancel }: ReportPrevie
                 </div>
 
                 {/* Content */}
-                <div className="overflow-y-auto flex-1 px-6 sm:px-8 py-6 space-y-4 min-h-0">
+                <div className="overflow-y-auto flex-1 px-6 sm:px-8 py-6 space-y-3 min-h-0">
+
                     {/* Patient Info */}
-                    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] p-5">
-                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-3">Patient Information</div>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50">Submission Time</span>
-                                <span className="text-white/80 font-medium">
-                                    {new Date(report.patientInfo.timestamp).toLocaleString()}
-                                </span>
-                            </div>
+                    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] px-5 py-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Clock size={10} className="text-white/30" />
+                            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30">Patient Information</div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-white/45 text-sm">Submission Time</span>
+                            <span className="text-white/80 text-sm font-medium tabular-nums">
+                                {new Date(report.patientInfo.timestamp).toLocaleString()}
+                            </span>
                         </div>
                     </div>
 
                     {/* Assessment Details */}
-                    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] p-5">
-                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-4">Assessment Details</div>
-                        <div className="space-y-3">
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50 text-sm">Category</span>
+                    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] px-5 py-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Activity size={10} className="text-white/30" />
+                            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30">Assessment Details</div>
+                        </div>
+                        <div className="divide-y divide-white/[0.05]">
+                            <div className="flex justify-between items-center py-2.5">
+                                <span className="text-white/45 text-sm">Category</span>
                                 <span className="text-white/85 text-sm font-medium capitalize">{report.assessment.category}</span>
                             </div>
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50 text-sm">Severity</span>
-                                <span className="text-white/85 text-sm font-medium">{report.assessment.severity}/5 &mdash; {report.assessment.severityLabel}</span>
+                            <div className="flex justify-between items-center py-2.5">
+                                <span className="text-white/45 text-sm">Severity</span>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex gap-[3px]">
+                                        {[1, 2, 3, 4, 5].map((i) => (
+                                            <div
+                                                key={i}
+                                                className={`w-4 h-2 rounded-full ${i <= report.assessment.severity ? SEVERITY_BAR_COLORS[report.assessment.severity - 1] : "bg-white/10"}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span className="text-white/80 text-sm font-medium">{report.assessment.severityLabel}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50 text-sm">Duration</span>
-                                <span className="text-white/85 text-sm font-medium">{DURATION_LABELS[report.assessment.duration] || report.assessment.duration}</span>
+                            <div className="flex justify-between items-center py-2.5">
+                                <span className="text-white/45 text-sm">Duration</span>
+                                <span className="text-white/80 text-sm font-medium">{DURATION_LABELS[report.assessment.duration] || report.assessment.duration}</span>
                             </div>
-                            <div className="pt-2 border-t border-white/[0.06]">
-                                <div className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-1.5">Symptoms</div>
-                                <p className="text-sm text-white/75 leading-relaxed">{report.assessment.symptoms}</p>
+                        </div>
+                        <div className="pt-3 mt-1 border-t border-white/[0.05]">
+                            <div className="text-[10px] uppercase tracking-widest font-bold text-white/25 mb-2">Symptoms</div>
+                            <div className="flex gap-3">
+                                <div className="w-[2px] bg-white/10 rounded-full shrink-0 self-stretch" />
+                                <p className="text-sm text-white/65 leading-relaxed">{report.assessment.symptoms}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Urgency Level */}
-                    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] p-5">
-                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-4">Triage Result</div>
-                        <div className="space-y-3">
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50 text-sm">Priority Level</span>
-                                <span className="text-white/90 text-sm font-bold">{report.assessment.urgencyLabel}</span>
+                    {/* Triage Result — colored left accent matching urgency */}
+                    <div
+                        className={`rounded-2xl border border-white/[0.07] px-5 py-4 ${urgencyStyle.cardBg}`}
+                        style={{ borderLeft: `3px solid ${urgencyStyle.accentColor}50` }}
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <ShieldAlert size={10} className="text-white/30" />
+                            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30">Triage Result</div>
+                        </div>
+                        <div className="divide-y divide-white/[0.05]">
+                            <div className="flex justify-between items-center py-2.5">
+                                <span className="text-white/45 text-sm">Priority Level</span>
+                                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${urgencyStyle.text} ${urgencyStyle.bg} ${urgencyStyle.border}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${urgencyStyle.dot}`} />
+                                    {report.assessment.urgencyLabel}
+                                </div>
                             </div>
-                            <div className="flex justify-between gap-3">
-                                <span className="text-white/50 text-sm">Care Type</span>
-                                <span className="text-white/85 text-sm font-medium">{report.recommendation.careType}</span>
+                            <div className="flex justify-between items-center py-2.5">
+                                <span className="text-white/45 text-sm">Care Type</span>
+                                <span className="text-white/80 text-sm font-medium">{report.recommendation.careType}</span>
                             </div>
-                            <div className="pt-2 border-t border-white/[0.06]">
-                                <div className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-1.5">Summary</div>
-                                <p className="text-sm text-white/65 leading-relaxed">{report.recommendation.summary}</p>
+                        </div>
+                        <div className="pt-3 mt-1 border-t border-white/[0.05]">
+                            <div className="text-[10px] uppercase tracking-widest font-bold text-white/25 mb-2">Summary</div>
+                            <div className="flex gap-3">
+                                <div className="w-[2px] rounded-full shrink-0 self-stretch" style={{ background: `${urgencyStyle.accentColor}50` }} />
+                                <p className="text-sm text-white/55 leading-relaxed italic">{report.recommendation.summary}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Selected Facility */}
-                    <div className="rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 p-5">
-                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-emerald-400/70 mb-3">Sending To</div>
-                        <p className="text-white font-bold text-base leading-tight">{report.selectedFacility.name}</p>
-                        <p className="text-white/55 text-sm mt-1">{report.selectedFacility.type}</p>
-                        <p className="text-white/40 text-xs mt-1">{report.selectedFacility.address}</p>
+                    {/* Sending To — destination card */}
+                    <div className="rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 px-5 py-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <MapPin size={10} className="text-emerald-400/60 shrink-0" />
+                                    <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-emerald-400/60">Sending To</div>
+                                </div>
+                                <p className="text-white font-bold text-base leading-tight">{report.selectedFacility.name}</p>
+                                <p className="text-white/50 text-sm mt-1">{report.selectedFacility.type}</p>
+                                <p className="text-white/35 text-xs mt-0.5 truncate">{report.selectedFacility.address}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                <ArrowRight size={15} className="text-emerald-400" />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Notice */}
-                    <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-4">
-                        <p className="text-xs text-white/40 leading-relaxed">
-                            <strong className="text-white/60">Note:</strong> This report will be sent to the selected facility.
+                    <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] px-5 py-3.5">
+                        <p className="text-xs text-white/35 leading-relaxed">
+                            <strong className="text-white/55">Note:</strong> This report will be sent to the selected facility.
                             Please ensure all information is accurate before submitting.
                         </p>
                     </div>

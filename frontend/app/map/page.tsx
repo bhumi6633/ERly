@@ -35,6 +35,38 @@ import type {
 // ── Flow Steps ──
 type FlowStep = "auth" | "questionnaire" | "map";
 
+// ── Ambulance marker SVG (shared, module-level) ───────────────────────────────
+function ambulanceSvg(selected: boolean): string {
+  const w = selected ? 52 : 44;
+  const h = selected ? 40 : 34;
+  const style = selected
+    ? "filter:drop-shadow(0 0 8px rgba(239,68,68,0.75)) drop-shadow(0 2px 5px rgba(0,0,0,0.45));"
+    : "filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5));";
+  return `<svg width="${w}" height="${h}" viewBox="0 0 52 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="${style}">
+    <!-- Red body -->
+    <rect x="2" y="7" width="40" height="22" rx="3" fill="#ef4444" stroke="#dc2626" stroke-width="1.5"/>
+    <!-- Darker-red cab/front -->
+    <path d="M36 7 L49 7 Q52 7 52 10 L52 24 Q52 29 49 29 L36 29 Z" fill="#dc2626" stroke="#b91c1c" stroke-width="1.5"/>
+    <!-- Windshield -->
+    <rect x="39" y="10" width="9" height="8" rx="1.5" fill="#bfdbfe" opacity="0.85"/>
+    <!-- White cross -->
+    <rect x="8"  y="15" width="16" height="4" rx="1" fill="white"/>
+    <rect x="14" y="9"  width="4"  height="16" rx="1" fill="white"/>
+    <!-- Emergency light bar -->
+    <rect x="12" y="3"  width="8"  height="4" rx="2" fill="#fbbf24"/>
+    <rect x="22" y="3"  width="8"  height="4" rx="2" fill="#3b82f6"/>
+    <!-- Wheels -->
+    <circle cx="11" cy="33" r="6" fill="#1f2937" stroke="#4b5563" stroke-width="1"/>
+    <circle cx="38" cy="33" r="6" fill="#1f2937" stroke="#4b5563" stroke-width="1"/>
+    <circle cx="11" cy="33" r="2.5" fill="#6b7280"/>
+    <circle cx="38" cy="33" r="2.5" fill="#6b7280"/>
+    <!-- Cab divider -->
+    <line x1="35" y1="8" x2="35" y2="29" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+    <!-- Side window -->
+    <rect x="4" y="12" width="8" height="8" rx="1" fill="white" opacity="0.2"/>
+  </svg>`;
+}
+
 function MapPageInner() {
   const searchParams = useSearchParams();
   const isWelcome = searchParams.get("welcome") === "true";
@@ -48,6 +80,9 @@ function MapPageInner() {
   const currentLocationMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const currentLocationRef = useRef<[number, number] | null>(null);
   const erMapLoadedRef = useRef(false);
+  const ambulanceMarkersRef        = useRef<mapboxgl.Marker[]>([]);
+  const ambulancesSetupRef         = useRef(false);
+  const selectedAmbulancePosRef    = useRef<[number, number] | null>(null);
 
   // ── Flow state ──
   const [flowStep, setFlowStep] = useState<FlowStep>(
@@ -390,6 +425,177 @@ function MapPageInner() {
     });
   }, []);
 
+  // ── Remove ambulance route layers/source ──
+  const clearAmbulanceRoute = useCallback(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    ["ambulance-route-from-ambo", "ambulance-route-outline", "ambulance-route", "ambulance-route-to-user"].forEach((id) => {
+      if (map.getLayer(id)) { try { map.removeLayer(id); } catch {} }
+    });
+    ["ambulance-route-from-ambo", "ambulance-route", "ambulance-route-to-user"].forEach((id) => {
+      if (map.getSource(id)) { try { map.removeSource(id); } catch {} }
+    });
+  }, []);
+
+  // ── Draw green path: selected ambulance → user location ──
+  const drawAmbulanceRoute = useCallback(async (from: [number, number]) => {
+    if (!mapRef.current || !currentLocationRef.current) return;
+    const map = mapRef.current;
+    const [toLng, toLat] = currentLocationRef.current;
+    const [fromLng, fromLat] = from;
+    clearAmbulanceRoute();
+    await new Promise((r) => setTimeout(r, 150));
+    try {
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${fromLng},${fromLat};${toLng},${toLat}?geometries=geojson&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (!data.routes?.length) return;
+      const geometry = data.routes[0].geometry;
+      const coords: [number, number][] = geometry.coordinates;
+
+      // Straight connector: exact ambulance position → road-snapped route start
+      const routeStart = coords[0];
+      map.addSource("ambulance-route-from-ambo", {
+        type: "geojson",
+        data: {
+          type: "Feature", properties: {},
+          geometry: { type: "LineString", coordinates: [[fromLng, fromLat], routeStart] },
+        } as any,
+      });
+      map.addLayer({
+        id: "ambulance-route-from-ambo",
+        type: "line",
+        source: "ambulance-route-from-ambo",
+        slot: "top",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#22c55e", "line-width": 5, "line-opacity": 0.9, "line-emissive-strength": 1 },
+      });
+
+      map.addSource("ambulance-route", {
+        type: "geojson",
+        data: { type: "Feature", properties: {}, geometry },
+      });
+      map.addLayer({
+        id: "ambulance-route-outline",
+        type: "line",
+        source: "ambulance-route",
+        slot: "top",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#4ade80", "line-width": 10, "line-opacity": 0.22, "line-emissive-strength": 1 },
+      });
+      map.addLayer({
+        id: "ambulance-route",
+        type: "line",
+        source: "ambulance-route",
+        slot: "top",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#22c55e", "line-width": 5, "line-opacity": 0.9, "line-emissive-strength": 1 },
+      });
+
+      // Straight connector: road-snapped endpoint → exact GPS blue dot
+      const routeEnd = coords[coords.length - 1];
+      map.addSource("ambulance-route-to-user", {
+        type: "geojson",
+        data: {
+          type: "Feature", properties: {},
+          geometry: { type: "LineString", coordinates: [routeEnd, [toLng, toLat]] },
+        } as any,
+      });
+      map.addLayer({
+        id: "ambulance-route-to-user",
+        type: "line",
+        source: "ambulance-route-to-user",
+        slot: "top",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#22c55e", "line-width": 5, "line-opacity": 0.9, "line-emissive-strength": 1 },
+      });
+    } catch (e) {
+      console.error("Ambulance route error:", e);
+    }
+  }, [clearAmbulanceRoute]);
+
+  // ── Remove all ambulance markers + their route ──
+  const clearAmbulances = useCallback(() => {
+    ambulanceMarkersRef.current.forEach((m) => m.remove());
+    ambulanceMarkersRef.current = [];
+    clearAmbulanceRoute();
+  }, [clearAmbulanceRoute]);
+
+  // ── Spawn ambulances around user — only for severity 4 / 5 ──
+  const addAmbulanceMarkers = useCallback(() => {
+    if (!mapRef.current) return;
+    clearAmbulances();
+
+    const [baseLng, baseLat] = currentLocationRef.current ?? (() => {
+      const c = mapRef.current!.getCenter();
+      return [c.lng, c.lat] as [number, number];
+    })();
+
+    const jitter = () => (Math.random() - 0.5) * 0.004;
+    // 5 positions scattered 0.5–2 km in different directions
+    const deltas: [number, number][] = [
+      [ 0.013,  0.007],  // ENE — selected (closest)
+      [-0.009,  0.011],  // NNW
+      [ 0.007, -0.014],  // SSE
+      [-0.016, -0.006],  // WSW
+      [ 0.020, -0.003],  // E
+    ];
+    const positions = deltas.map(([dlng, dlat]): [number, number] => [
+      baseLng + dlng + jitter(),
+      baseLat + dlat + jitter(),
+    ]);
+
+    const selectedIdx = 0;
+    const eta = Math.floor(2 + Math.random() * 5); // 2–6 min ETA
+    selectedAmbulancePosRef.current = positions[selectedIdx];
+
+    positions.forEach((pos, idx) => {
+      const isSelected = idx === selectedIdx;
+      const el = document.createElement("div");
+      el.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:default;";
+
+      if (isSelected) {
+        el.innerHTML = `
+          <div style="
+            background:#ffffff;
+            border:2.5px solid #22c55e;
+            border-radius:12px;
+            padding:5px 13px;
+            font-size:13px;
+            font-weight:800;
+            color:#16a34a;
+            white-space:nowrap;
+            box-shadow:0 3px 12px rgba(0,0,0,0.28),0 0 0 4px rgba(34,197,94,0.18);
+            font-family:ui-sans-serif,system-ui,sans-serif;
+            letter-spacing:0.01em;
+            position:relative;
+            margin-bottom:4px;
+          ">
+            ETA: ${eta} min
+            <div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #22c55e;"></div>
+            <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid white;"></div>
+          </div>
+          ${ambulanceSvg(true)}`;
+      } else {
+        el.innerHTML = ambulanceSvg(false);
+      }
+
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: "bottom",
+        pitchAlignment: "map",
+        rotationAlignment: "map",
+      })
+        .setLngLat(pos)
+        .addTo(mapRef.current!);
+
+      ambulanceMarkersRef.current.push(marker);
+    });
+
+    // Green route: selected ambulance → user
+    drawAmbulanceRoute(positions[selectedIdx]);
+  }, [clearAmbulances, drawAmbulanceRoute]);
+
   // ── Draw route from user location to facility ──
   const drawRoute = useCallback(async (destination: [number, number]) => {
     if (!mapRef.current) return;
@@ -622,6 +828,24 @@ function MapPageInner() {
     }
   }, [triageResult, mapReady, activeFilter, addFacilityMarkers]);
 
+  // ── Ambulance overlay — severity 4 or 5 only ──────────────────────────────
+  useEffect(() => {
+    const isUrgent = userSeverity != null && userSeverity >= 4;
+    if (mapReady && flowStep === "map" && triageResult && isUrgent) {
+      // Guard: only set up once per session (triageResult ref changes on Backboard merge)
+      if (!ambulancesSetupRef.current) {
+        ambulancesSetupRef.current = true;
+        const t = setTimeout(addAmbulanceMarkers, 900);
+        return () => clearTimeout(t);
+      }
+    } else {
+      if (ambulancesSetupRef.current) {
+        ambulancesSetupRef.current = false;
+        clearAmbulances();
+      }
+    }
+  }, [mapReady, flowStep, triageResult, userSeverity, addAmbulanceMarkers, clearAmbulances]);
+
   // ── Request geolocation ──
   useEffect(() => {
     if (!mapReady) return;
@@ -642,12 +866,17 @@ function MapPageInner() {
         if (currentLocationMarkerRef.current) {
           currentLocationMarkerRef.current.setLngLat([longitude, latitude]);
         }
+
+        // Redraw ambulance → user route so it ends exactly at the GPS blue dot
+        if (ambulancesSetupRef.current && selectedAmbulancePosRef.current) {
+          setTimeout(() => drawAmbulanceRoute(selectedAmbulancePosRef.current!), 300);
+        }
       },
       () => {},
       { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 }
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady]);
+  }, [mapReady, drawAmbulanceRoute]);
 
   // ── Auto-load ER map ──
   useEffect(() => {
