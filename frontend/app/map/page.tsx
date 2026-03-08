@@ -242,7 +242,7 @@ function MapPageInner() {
     markersRef.current = [];
   }, []);
 
-  // ── Add current location marker (blue pin) ──
+  // ── Add current location marker (blue pulsing dot) ──
   const addCurrentLocationMarker = useCallback(() => {
     if (!mapRef.current) return;
 
@@ -251,12 +251,11 @@ function MapPageInner() {
       currentLocationMarkerRef.current.remove();
     }
 
-    const center = mapRef.current.getCenter();
-    const currentCoords: [number, number] = [center.lng, center.lat];
-    
-    // ALWAYS update the saved current location when adding the marker
-    currentLocationRef.current = currentCoords;
-    console.log('Adding blue marker and saving location:', currentCoords);
+    // Use geolocation-set position if available; fall back to map center
+    const coords: [number, number] = currentLocationRef.current ?? (() => {
+      const c = mapRef.current!.getCenter();
+      return [c.lng, c.lat] as [number, number];
+    })();
 
     // Create blue pin element - BIGGER AND BOLDER
     const el = document.createElement('div');
@@ -298,7 +297,7 @@ function MapPageInner() {
       pitchAlignment: 'map',
       rotationAlignment: 'map',
     })
-      .setLngLat(currentCoords)
+      .setLngLat(coords)
       .addTo(mapRef.current);
 
     currentLocationMarkerRef.current = marker;
@@ -399,36 +398,29 @@ function MapPageInner() {
           },
         });
 
-        // Add route outline (darker border for contrast)
+        // Route casing (thin dark border for readability on all map styles)
         map.addLayer({
           id: 'route-outline',
           type: 'line',
           source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#7F1D1D',
-            'line-width': 14,
-            'line-opacity': 0.8,
+            'line-color': '#1D4ED8',
+            'line-width': 10,
+            'line-opacity': 0.6,
           },
         });
 
-        // Add main route line (BOLD DARK RED DOTTED LINE - very visible)
+        // Main navigation line — solid blue, no dashes
         map.addLayer({
           id: 'route',
           type: 'line',
           source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#B91C1C',
-            'line-width': 10,
+            'line-color': '#3B82F6',
+            'line-width': 6,
             'line-opacity': 1.0,
-            'line-dasharray': [3, 4],
           },
         });
 
@@ -454,15 +446,11 @@ function MapPageInner() {
           id: 'route-to-pin',
           type: 'line',
           source: 'route-to-pin',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#B91C1C',
-            'line-width': 10,
+            'line-color': '#3B82F6',
+            'line-width': 6,
             'line-opacity': 1.0,
-            'line-dasharray': [3, 4],
           },
         });
 
@@ -665,6 +653,34 @@ function MapPageInner() {
       };
     }
   }, [triageResult, mapReady, addFacilityMarkers]);
+
+  // ── Request geolocation and update blue dot + map center ──
+  useEffect(() => {
+    if (!mapReady) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        currentLocationRef.current = [longitude, latitude];
+
+        mapRef.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: 13,
+          duration: 1200,
+          essential: true,
+        });
+
+        // Reposition existing blue dot to actual GPS coordinates
+        if (currentLocationMarkerRef.current) {
+          currentLocationMarkerRef.current.setLngLat([longitude, latitude]);
+        }
+      },
+      () => { /* Permission denied or unavailable — keep default center */ },
+      { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 }
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady]);
 
   // ── Auto-load ER map when coming from ER button ──
   useEffect(() => {

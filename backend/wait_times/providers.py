@@ -6,6 +6,18 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+_ONTARIO_TZ = ZoneInfo("America/Toronto")
+
+
+def _ontario_now(utc_naive: datetime) -> datetime:
+    """Convert UTC-naive datetime to Ontario local time for demand calculations.
+
+    All ERly facilities are in Ontario, Canada. Using UTC for daypart/weekday
+    demand multipliers produces wrong results in evenings (UTC date = next day).
+    """
+    return utc_naive.replace(tzinfo=timezone.utc).astimezone(_ONTARIO_TZ).replace(tzinfo=None)
 
 from models import CareLocation
 from wait_times.constants import (
@@ -529,8 +541,9 @@ class ProvincialBenchmarkProvider(WaitTimeSourceProvider):
             return None
 
         now = as_utc_naive(now)
-        daypart_mult = DAYPART_DEMAND_MULTIPLIERS[get_daypart(now.hour)]
-        weekday_mult = WEEKDAY_DEMAND_MULTIPLIERS.get(now.weekday(), 1.0)
+        local = _ontario_now(now)
+        daypart_mult = DAYPART_DEMAND_MULTIPLIERS[get_daypart(local.hour)]
+        weekday_mult = WEEKDAY_DEMAND_MULTIPLIERS.get(local.weekday(), 1.0)
 
         baseline = ONTARIO_MEDIAN_ED_PHYSICIAN_WAIT_MINUTES * size_factor * daypart_mult * weekday_mult
         est_wait = max(1, round(baseline))
@@ -653,8 +666,9 @@ class CareSettingProxyProvider(WaitTimeSourceProvider):
             return None
 
         now = as_utc_naive(now)
-        daypart_mult = DAYPART_DEMAND_MULTIPLIERS[get_daypart(now.hour)]
-        weekday_mult = WEEKDAY_DEMAND_MULTIPLIERS.get(now.weekday(), 1.0)
+        local = _ontario_now(now)
+        daypart_mult = DAYPART_DEMAND_MULTIPLIERS[get_daypart(local.hour)]
+        weekday_mult = WEEKDAY_DEMAND_MULTIPLIERS.get(local.weekday(), 1.0)
         proxy_factor = CARE_SETTING_PROXY_FACTORS.get(location.type, 1.0)
         is_open = is_location_open(location, now)
 
@@ -786,8 +800,9 @@ class EstimationProvider(WaitTimeSourceProvider):
         rng = random.Random(f"{location.id}:{bucket_time.isoformat()}:{location.type}")
 
         base = FACILITY_BASELINES.get(location.type, FACILITY_BASELINES["clinic"])
-        demand_multiplier = DAYPART_DEMAND_MULTIPLIERS[get_daypart(now.hour)]
-        demand_multiplier *= WEEKDAY_DEMAND_MULTIPLIERS.get(now.weekday(), 1.0)
+        local = _ontario_now(now)
+        demand_multiplier = DAYPART_DEMAND_MULTIPLIERS[get_daypart(local.hour)]
+        demand_multiplier *= WEEKDAY_DEMAND_MULTIPLIERS.get(local.weekday(), 1.0)
 
         specialty_uplift = 1.0
         for specialty in getattr(location, "specialties", []) or []:

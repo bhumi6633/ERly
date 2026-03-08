@@ -2,8 +2,9 @@
 
 import { useState, memo, useEffect } from "react";
 /* eslint-disable @next/next/no-img-element */
-import { Cross2Icon, DrawingPinIcon, ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { Phone, Clock, Navigation, ShieldCheck, AlertTriangle, HelpCircle } from "lucide-react";
+import { X, MapPin, ChevronDown, ChevronUp, ShieldCheck, AlertTriangle, HelpCircle, Navigation, Phone } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatMinutes } from "@/lib/utils";
 import type { FacilityDetails, WaitTimeSnapshot } from "@/lib/types";
 
 interface FacilityDetailsPanelProps {
@@ -94,7 +95,7 @@ function EvidencePanel({ snapshot }: { snapshot: WaitTimeSnapshot }) {
                                     <span className="text-[11px] text-white/70 font-mono">{rec.source_kind}</span>
                                     <span className="flex items-center gap-1.5 text-[10px] text-white/40">
                                         <span className="text-white/50">conf {rec.confidence_score.toFixed(2)}</span>
-                                        {isOpen ? <ChevronUpIcon width={12} /> : <ChevronDownIcon width={12} />}
+                                        {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                                     </span>
                                 </button>
                                 {isOpen && (
@@ -263,9 +264,9 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
             {/* Close Button */}
             <button
                 onClick={onClose}
-                className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white/50 hover:text-white transition-all duration-200"
+                className="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-black/40 hover:bg-black/60 text-white/40 hover:text-white/80 transition-colors"
             >
-                <Cross2Icon width={14} height={14} />
+                <X size={14} />
             </button>
 
             {/* Satellite Image */}
@@ -274,8 +275,8 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     <div className="absolute inset-0 skeleton-shimmer" />
                 )}
                 {imageError ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-950">
-                        <div className="text-white/25 text-sm">Image unavailable</div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                        <div className="text-white/20 text-sm">Image unavailable</div>
                     </div>
                 ) : (
                     <img
@@ -288,67 +289,73 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                 )}
 
                 {/* Type Badge */}
-                <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-emerald-500/25 border border-emerald-400/20 text-emerald-300 text-xs font-medium backdrop-blur-sm">
+                <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded-md bg-black/55 border border-white/[0.10] text-white/70 text-[9px] font-bold uppercase tracking-widest backdrop-blur-sm">
                     {facility.type}
                 </div>
             </div>
 
             {/* Scrollable details */}
             <div className="p-4 overflow-y-auto max-h-[60vh]">
-                <h3 className="text-white font-semibold text-lg leading-tight">
+                {/* Name */}
+                <h3 className="text-white font-semibold text-base leading-tight pr-6">
                     {facility.name}
                 </h3>
 
-                <div className="flex items-start gap-2 text-white/50 text-sm mt-2">
-                    <DrawingPinIcon width={14} height={14} className="mt-0.5 shrink-0" />
+                {/* Address */}
+                <div className="flex items-start gap-1.5 text-white/40 text-xs mt-1.5">
+                    <MapPin size={11} className="mt-0.5 shrink-0" />
                     <span>{facility.address}</span>
                 </div>
 
-                {/* Info Grid */}
-                <div className="grid grid-cols-2 gap-2 mt-4">
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-2 mt-4">
                     {facility.waitTime && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <Clock size={14} className="text-emerald-400 shrink-0" />
-                            <div>
-                                <div className="text-[10px] text-white/35 uppercase tracking-wider">Wait</div>
-                                <div className="text-white text-sm font-medium">{facility.waitTime}</div>
+                        <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <div className="text-[9px] uppercase tracking-[0.18em] font-bold text-white/25 mb-0.5">
+                                Wait
+                            </div>
+                            <div className="text-sm font-semibold text-white tabular-nums leading-tight">{facility.waitTime}</div>
+                        </div>
+                    )}
+                    {facility.travelTimeMinutes != null && (
+                        <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <div className="text-[9px] uppercase tracking-[0.18em] font-bold text-white/25 mb-0.5">
+                                Drive
+                            </div>
+                            <div className="text-sm font-semibold text-white tabular-nums leading-tight">
+                                {formatMinutes(facility.travelTimeMinutes)}
                             </div>
                         </div>
                     )}
                     {facility.distance && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <Navigation size={14} className="text-blue-400 shrink-0" />
-                            <div>
-                                <div className="text-[10px] text-white/35 uppercase tracking-wider">Distance</div>
-                                <div className="text-white text-sm font-medium">{facility.distance}</div>
+                        <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <div className="text-[9px] uppercase tracking-[0.18em] font-bold text-white/25 mb-0.5">
+                                Away
                             </div>
-                        </div>
-                    )}
-                    {facility.travelTimeMinutes != null && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <Navigation size={14} className="text-sky-400 shrink-0" />
-                            <div>
-                                <div className="text-[10px] text-white/35 uppercase tracking-wider">Drive</div>
-                                <div className="text-white text-sm font-medium">{facility.travelTimeMinutes}m</div>
-                            </div>
+                            <div className="text-sm font-semibold text-white tabular-nums leading-tight">{facility.distance}</div>
                         </div>
                     )}
                 </div>
 
-                {/* Total time to care — headline stat */}
+                {/* Total time to care */}
                 {facility.totalTimeMinutes != null && (
-                    <div className="mt-3 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20">
-                        <div className="text-[10px] text-emerald-300/60 uppercase tracking-wider font-medium mb-0.5">
-                            Total time to care
+                    <div className="mt-3 px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                        <div className="text-[9px] uppercase tracking-[0.2em] font-bold text-white/25 mb-1">
+                            Time to Care
                         </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-emerald-300 text-2xl font-bold">{Math.round(facility.totalTimeMinutes)}m</span>
-                            <span className="text-white/40 text-xs font-mono">
-                                {facility.travelTimeMinutes != null
-                                    ? `${facility.travelTimeMinutes}m drive + ${Math.round(facility.totalTimeMinutes - facility.travelTimeMinutes)}m wait`
-                                    : "travel + wait"}
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-bold text-white tabular-nums">
+                                {Math.round(facility.totalTimeMinutes)}
                             </span>
+                            <span className="text-sm text-white/40 font-medium">min</span>
                         </div>
+                        {facility.travelTimeMinutes != null && (
+                            <div className="text-[10px] text-white/30 font-mono mt-0.5">
+                                {formatMinutes(facility.travelTimeMinutes)} drive
+                                {" · "}
+                                {formatMinutes(Math.round(facility.totalTimeMinutes - facility.travelTimeMinutes))} wait
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -376,7 +383,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                         ) : (
                             <span className="text-[10px] text-white/30 font-mono">no live data</span>
                         )}
-                        {showEvidence ? <ChevronUpIcon width={12} /> : <ChevronDownIcon width={12} />}
+                        {showEvidence ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     </span>
                 </button>
 
@@ -404,10 +411,10 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     {facility.phone && (
                         <a
                             href={`tel:${facility.phone}`}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 transition-all duration-200 text-sm font-medium"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] text-white/70 hover:text-white transition-colors text-sm font-medium border border-white/[0.07]"
                         >
-                            <Phone size={16} />
-                            <span>Call {facility.phone}</span>
+                            <Phone size={15} />
+                            <span>{facility.phone}</span>
                         </a>
                     )}
                     {showReportButton && (
@@ -417,10 +424,10 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                                     onShowRoute();
                                 }
                             }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all duration-200 text-sm font-semibold"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-bold text-[11px] uppercase tracking-[0.15em] hover:bg-white/90 transition-colors"
                         >
-                            <Navigation size={16} />
-                            <span>REVIEW AND SUBMIT REPORT</span>
+                            <Navigation size={14} />
+                            <span>Review &amp; Submit Report</span>
                         </button>
                     )}
                 </div>
