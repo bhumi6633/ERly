@@ -63,6 +63,7 @@ def root():
         "service": "ERly API",
         "docs": "/docs",
         "health": "/health",
+        "version": "/version",
         "locations": "/locations/",
         "wait_times": "/wait-times/",
         "seed": "/seed?secret=YOUR_SEED_SECRET (set SEED_SECRET in env first)",
@@ -72,6 +73,19 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "ERly API"}
+
+
+@app.get("/version")
+def version():
+    """Deploy check: which commit/build is live. Use to verify Render deploys."""
+    out = {"service": "ERly API", "version": "0.1.0"}
+    commit = os.getenv("RENDER_GIT_COMMIT")
+    branch = os.getenv("RENDER_GIT_BRANCH")
+    if commit:
+        out["commit"] = commit[:7] if len(commit) > 7 else commit
+    if branch:
+        out["branch"] = branch
+    return out
 
 
 @app.get("/health/db")
