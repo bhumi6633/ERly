@@ -147,7 +147,7 @@ export default function Home() {
                 className="group relative h-14 px-8 rounded-full overflow-hidden bg-red-600 hover:bg-red-500 transition-all duration-500 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 flex items-center justify-center gap-3 text-white font-semibold text-lg"
               >
                 <Activity className="w-5 h-5" />
-                GO TO ER MAP w/ Wait Time
+                ER Wait Map
               </button>
             </div>
           </motion.div>

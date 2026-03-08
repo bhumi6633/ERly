@@ -1,6 +1,24 @@
 "use client";
 
 import { useState, useRef, useEffect, memo } from "react";
+import { Mic, Square } from "lucide-react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+async function transcribeAudio(blob: Blob): Promise<string> {
+  const form = new FormData();
+  form.append("file", blob, "audio.webm");
+  const res = await fetch(`${API_URL}/speech-to-text`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "Transcription failed");
+  }
+  const data = await res.json();
+  return data.text ?? "";
+}
 
 interface SearchBarProps {
   value: string;
@@ -26,8 +44,52 @@ export const SearchBar = memo(function SearchBar({
   ],
 }: SearchBarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (chunksRef.current.length === 0) {
+          setIsRecording(false);
+          return;
+        }
+        setIsTranscribing(true);
+        try {
+          const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+          const text = await transcribeAudio(blob);
+          onChange(value ? `${value} ${text}` : text);
+          inputRef.current?.focus();
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+    } catch {
+      // Microphone access denied or unavailable
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
+      setIsRecording(false);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && value.trim()) {
@@ -96,6 +158,34 @@ export const SearchBar = memo(function SearchBar({
             </div>
           )}
         </div>
+
+        {/* Voice input for symptoms */}
+        {!isRecording && !isTranscribing && (
+          <button
+            type="button"
+            onClick={startRecording}
+            className="px-3 py-3 bg-white/[0.04] hover:bg-emerald-500/20 border border-white/[0.06] hover:border-emerald-500/30 text-white/60 hover:text-emerald-300 rounded-xl transition-all flex items-center justify-center"
+            disabled={isLoading}
+            title="Describe symptoms by voice"
+          >
+            <Mic size={20} />
+          </button>
+        )}
+        {isRecording && (
+          <button
+            type="button"
+            onClick={stopRecording}
+            className="px-3 py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl animate-pulse flex items-center justify-center"
+            title="Stop recording"
+          >
+            <Square size={18} fill="currentColor" />
+          </button>
+        )}
+        {isTranscribing && (
+          <div className="px-3 py-3 bg-white/10 rounded-xl flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          </div>
+        )}
 
         {quickPrompts.length > 0 && (
           <div className="relative" ref={dropdownRef}>
