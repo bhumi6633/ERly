@@ -100,6 +100,7 @@ function MapPageInner() {
   const navPuckRef = useRef<mapboxgl.Marker | null>(null);
   const navAnimFrameRef = useRef<number | null>(null);
   const navAnimStepRef = useRef(0);
+  const navAutoTrafficRef = useRef(false);
   // Ambulance tracking
   const ambulanceMarkersRef        = useRef<mapboxgl.Marker[]>([]);
   const ambulancesSetupRef         = useRef(false);
@@ -137,6 +138,7 @@ function MapPageInner() {
   const [navPhase, setNavPhase] = useState<NavPhase>('idle');
   const [navigationData, setNavigationData] = useState<NavigationData | null>(null);
   const isNavigating = navPhase !== 'idle';
+  const [navShowTraffic, setNavShowTraffic] = useState(true);
 
   // ── Isochrone + geocoding state ──
   const [isochroneTarget, setIsochroneTarget] = useState<[number, number] | null>(null);
@@ -473,8 +475,8 @@ function MapPageInner() {
     const marker = new mapboxgl.Marker({
       element: el,
       anchor: 'center',
-      pitchAlignment: 'map',
-      rotationAlignment: 'map',
+      pitchAlignment: 'viewport',
+      rotationAlignment: 'viewport',
     })
       .setLngLat(coords)
       .addTo(mapRef.current);
@@ -501,6 +503,76 @@ function MapPageInner() {
       }
     });
   }, []);
+
+  // ── Navigation traffic + recenter callbacks ──
+  const enableNavTraffic = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      try {
+        if (!map.getSource('mapbox-traffic')) {
+          map.addSource('mapbox-traffic', { type: 'vector', url: 'mapbox://mapbox.mapbox-traffic-v1' });
+        }
+        if (!map.getLayer('traffic')) {
+          map.addLayer({
+            id: 'traffic', type: 'line', source: 'mapbox-traffic', 'source-layer': 'traffic',
+            paint: {
+              'line-color': ['match', ['get', 'congestion'],
+                'low', '#22C55E', 'moderate', '#FBBF24', 'heavy', '#F87171', 'severe', '#DC2626', '#94a3b8',
+              ] as any,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 4] as any,
+              'line-opacity': 0.9,
+            },
+          });
+        } else {
+          map.setLayoutProperty('traffic', 'visibility', 'visible');
+        }
+        navAutoTrafficRef.current = true;
+      } catch { /* ignore */ }
+    };
+    // Wait for style to be fully loaded before adding layers
+    if (map.isStyleLoaded()) {
+      apply();
+    } else {
+      map.once('styledata', apply);
+    }
+  }, []);
+
+  const disableNavTraffic = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    try {
+      if (map.getLayer('traffic')) map.setLayoutProperty('traffic', 'visibility', 'none');
+    } catch { /* ignore */ }
+    navAutoTrafficRef.current = false;
+  }, []);
+
+  const handleNavRecenter = useCallback(() => {
+    if (!mapRef.current || !navigationData?.startCoords) return;
+    mapRef.current.flyTo({
+      center: navigationData.startCoords,
+      zoom: 16.5, pitch: 60,
+      bearing: navigationData.initialBearing ?? 0,
+      duration: 1200, essential: true,
+    });
+  }, [navigationData]);
+
+  const handleNavOverview = useCallback(() => {
+    if (!mapRef.current || !navigationData?.startCoords) return;
+    mapRef.current.easeTo({
+      center: navigationData.startCoords,
+      zoom: 12, pitch: 30, bearing: 0, duration: 1000,
+    });
+  }, [navigationData]);
+
+  const handleNavToggleTraffic = useCallback(() => {
+    setNavShowTraffic(prev => {
+      const next = !prev;
+      if (next) enableNavTraffic();
+      else disableNavTraffic();
+      return next;
+    });
+  }, [enableNavTraffic, disableNavTraffic]);
 
   // ── Remove ambulance route layers/source ──
   const clearAmbulanceRoute = useCallback(() => {
@@ -660,8 +732,8 @@ function MapPageInner() {
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: "bottom",
-        pitchAlignment: "map",
-        rotationAlignment: "map",
+        pitchAlignment: "viewport",
+        rotationAlignment: "viewport",
       })
         .setLngLat(pos)
         .addTo(mapRef.current!);
@@ -914,6 +986,9 @@ function MapPageInner() {
   const handleGo = useCallback(async (facility: FacilityDetails) => {
     // Immediately show loading overlay — user gets instant feedback
     setNavPhase('loading');
+    // Clear ambulance markers immediately — they must not be visible during navigation
+    ambulancesSetupRef.current = false;
+    clearAmbulances();
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
@@ -1035,7 +1110,7 @@ function MapPageInner() {
       setNavPhase('navigating');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drawRoute, drawRouteFromGeometry, lastSymptoms, userSeverity, triageResult]);
+  }, [drawRoute, drawRouteFromGeometry, lastSymptoms, userSeverity, triageResult, clearAmbulances]);
 
   // ── Auto-dismiss celebration after 3.5 s ──
   useEffect(() => {
@@ -1043,6 +1118,17 @@ function MapPageInner() {
     const t = setTimeout(() => setNavPhase('navigating'), 3500);
     return () => clearTimeout(t);
   }, [navPhase]);
+
+
+  // ── Auto-enable traffic overlay when navigating ──
+  useEffect(() => {
+    if (navPhase === 'navigating' && navShowTraffic) {
+      const t = setTimeout(enableNavTraffic, 800);
+      return () => clearTimeout(t);
+    } else if (navPhase === 'idle' && navAutoTrafficRef.current) {
+      disableNavTraffic();
+    }
+  }, [navPhase, navShowTraffic, enableNavTraffic, disableNavTraffic]);
 
   // ── Isochrone reachability rings: 15 min (green) + 30 min (blue) from user ──
   useEffect(() => {
@@ -1197,8 +1283,8 @@ function MapPageInner() {
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: 'bottom',
-        pitchAlignment: 'map',
-        rotationAlignment: 'map',
+        pitchAlignment: 'viewport',
+        rotationAlignment: 'viewport',
       })
         .setLngLat(facility.coordinates)
         .addTo(mapRef.current!);
@@ -1277,10 +1363,11 @@ function MapPageInner() {
     }
   }, [triageResult, mapReady, activeFilter, addFacilityMarkers, handleFacilitySelect, isNavigating]);
 
-  // ── Ambulance overlay — severity 4 or 5 only ──────────────────────────────
+  // ── Ambulance overlay — severity 4 or 5 only, hidden during navigation ─────
   useEffect(() => {
     const isUrgent = userSeverity != null && userSeverity >= 4;
-    if (mapReady && flowStep === "map" && triageResult && isUrgent) {
+    // Hide ambulances during any navigation phase — they interfere with the nav puck and route
+    if (mapReady && flowStep === "map" && triageResult && isUrgent && !isNavigating) {
       // Guard: only set up once per session (triageResult ref changes on Backboard merge)
       if (!ambulancesSetupRef.current) {
         ambulancesSetupRef.current = true;
@@ -1293,7 +1380,7 @@ function MapPageInner() {
         clearAmbulances();
       }
     }
-  }, [mapReady, flowStep, triageResult, userSeverity, addAmbulanceMarkers, clearAmbulances]);
+  }, [mapReady, flowStep, triageResult, userSeverity, isNavigating, addAmbulanceMarkers, clearAmbulances]);
 
   // ── Request geolocation ──
   useEffect(() => {
@@ -1422,11 +1509,11 @@ function MapPageInner() {
       <div ref={mapContainer} className="h-full w-full" />
 
       {/* ── Filter Toolbar (shown only when triage results are available) ── */}
-      {showToolbar && flowStep === "map" && !!triageResult && (
+      {showToolbar && flowStep === "map" && !!triageResult && !isNavigating && (
         <Toolbar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
       )}
 
-      {mapReady && <MapControls map={mapRef.current} />}
+      {mapReady && navPhase === 'idle' && <MapControls map={mapRef.current} />}
 
       {/* ── Location Search (Mapbox Geocoding API) ── */}
       {flowStep === 'map' && navPhase === 'idle' && (
@@ -1602,6 +1689,10 @@ function MapPageInner() {
             // Restore overview camera
             mapRef.current?.easeTo({ pitch: 45, bearing: 0, zoom: 13, duration: 1000 });
           }}
+          onRecenter={handleNavRecenter}
+          onOverview={handleNavOverview}
+          showTraffic={navShowTraffic}
+          onToggleTraffic={handleNavToggleTraffic}
         />
       )}
 
