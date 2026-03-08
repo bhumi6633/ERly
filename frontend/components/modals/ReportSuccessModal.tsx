@@ -32,7 +32,7 @@ export function ReportSuccessModal({ facilityName, onClose, onGoHome }: ReportSu
                     <div className="text-white/60 text-sm leading-relaxed">
                         Your intake report has been forwarded to{" "}
                         <span className="text-white font-medium">{facilityName}</span>.
-                        Head there now — staff will have your information ready.
+                        Head there now. Staff will have your information ready.
                     </div>
                 </div>
 

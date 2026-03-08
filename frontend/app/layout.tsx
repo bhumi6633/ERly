@@ -5,7 +5,7 @@ import { Auth0ProviderWrapper } from "@/components/auth0-provider";
 
 export const metadata: Metadata = {
   title: "ERly",
-  description: "Find the right care, right now — healthcare navigation powered by smart triage",
+  description: "Find the right care, right now. Healthcare navigation powered by smart triage",
 };
 
 export default function RootLayout({

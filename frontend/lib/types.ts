@@ -19,6 +19,10 @@ export interface TriageResult {
     careType: string;
     summary: string;
     facilities: TriageFacility[];
+    /** Minutes saved vs going to the nearest ER instead */
+    timeSavedMinutes?: number | null;
+    /** Total time at the nearest ER (travel + wait), for comparison */
+    nearestErTotalMinutes?: number | null;
 }
 
 /** A healthcare facility returned by triage */
@@ -29,12 +33,14 @@ export interface TriageFacility {
     distance: string;
     waitTime?: string;
     address: string;
-    coordinates: [number, number];
+    coordinates?: [number, number];
     careAccessTime?: number;
     /** Backend DB location ID — present when facility comes from /care-options */
     locationId?: number;
     travelTimeMinutes?: number;
     totalTimeMinutes?: number;
+    phone?: string;
+    website?: string;
 }
 
 /** Detailed info for a selected facility */
@@ -53,6 +59,30 @@ export interface FacilityDetails {
     locationId?: number;
     travelTimeMinutes?: number;
     totalTimeMinutes?: number;
+}
+
+/** A single turn-by-turn navigation instruction from Mapbox Directions */
+export interface NavigationStep {
+    instruction: string;
+    distanceMeters: number;
+    durationSeconds: number;
+    type?: string;
+    modifier?: string;
+}
+
+/** State for the active navigation session */
+export interface NavigationData {
+    facilityName: string;
+    facilityAddress: string;
+    etaMinutes: number;
+    distanceKm: number;
+    steps: NavigationStep[];
+    patientId: string | null;
+    preArrivalSent: boolean;
+    /** Starting coords — used to position the nav camera */
+    startCoords?: [number, number];
+    /** Compass bearing toward facility at nav start */
+    initialBearing?: number;
 }
 
 // ── Wait Time Evidence Types ──────────────────────────────────────────────────
@@ -166,6 +196,7 @@ export interface CareOption {
     name: string;
     type: string;
     address: string;
+    phone?: string;
     latitude: number;
     longitude: number;
     distance_km: number;

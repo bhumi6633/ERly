@@ -28,7 +28,7 @@ const STEPS = [
   {
     num: "01",
     title: "Describe Your Symptoms",
-    desc: "Tell us what you're experiencing. Our system understands natural language — just type like you would tell a friend.",
+    desc: "Tell us what you're experiencing. Our system understands natural language, so just type like you would tell a friend.",
     icon: <Activity className="w-6 h-6" />,
   },
   {
@@ -48,7 +48,7 @@ const STEPS = [
 const FEATURES = [
   {
     title: "Smart Triage",
-    desc: "AI-powered symptom evaluation helps route you to the right level of care — ER, urgent care, walk-in, or self-care.",
+    desc: "AI-powered symptom evaluation helps route you to the right level of care: ER, urgent care, walk-in, or self-care.",
     icon: <Shield className="w-5 h-5" />,
     span: "md:col-span-2",
   },
@@ -132,7 +132,7 @@ export default function Home() {
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
               Describe your symptoms and get matched with the best care
-              option — from emergency rooms to telehealth.
+              option, from emergency rooms to telehealth.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <button

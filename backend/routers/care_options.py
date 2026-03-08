@@ -30,6 +30,7 @@ class CareOptionOut(BaseModel):
     name: str
     type: str
     address: str
+    phone: Optional[str]
     latitude: float
     longitude: float
     distance_km: float
@@ -114,6 +115,7 @@ def get_care_options(
                 name=location.name,
                 type=location.type,
                 address=location.address or "",
+                phone=location.phone,
                 latitude=loc_lat,
                 longitude=loc_lng,
                 distance_km=round(dist_km, 2),

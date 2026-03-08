@@ -7,7 +7,7 @@ import {
   InfoCircledIcon,
   Cross2Icon,
 } from "@radix-ui/react-icons";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Radio } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface MapControlsProps {
@@ -19,7 +19,8 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
   const [bearing, setBearing] = useState(0);
   const [zoom, setZoom] = useState(1.5);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [mapLightMode, setMapLightMode] = useState(false); // false = night, true = day
+  const [mapLightMode, setMapLightMode] = useState(true); // true = day (default), false = night
+  const [showTraffic, setShowTraffic] = useState(false);
 
   useEffect(() => {
     if (!map) return;
@@ -83,10 +84,77 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
     }
   }, [map, mapLightMode]);
 
+  const handleToggleTraffic = useCallback(() => {
+    if (!map) return;
+    const next = !showTraffic;
+    setShowTraffic(next);
+    try {
+      if (next) {
+        // Add traffic source + layer lazily on first activation
+        if (!map.getSource('mapbox-traffic')) {
+          map.addSource('mapbox-traffic', {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-traffic-v1',
+          });
+        }
+        if (!map.getLayer('traffic')) {
+          map.addLayer({
+            id: 'traffic',
+            type: 'line',
+            source: 'mapbox-traffic',
+            'source-layer': 'traffic',
+            paint: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              'line-color': ['match', ['get', 'congestion'] as any,
+                'low',      '#22C55E',
+                'moderate', '#FBBF24',
+                'heavy',    '#F87171',
+                'severe',   '#DC2626',
+                '#94a3b8',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ] as any,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 3.5] as any,
+              'line-opacity': 0.85,
+            },
+          });
+        } else {
+          map.setLayoutProperty('traffic', 'visibility', 'visible');
+        }
+      } else {
+        if (map.getLayer('traffic')) {
+          map.setLayoutProperty('traffic', 'visibility', 'none');
+        }
+      }
+    } catch { /* ignore */ }
+  }, [map, showTraffic]);
+
   return (
     <Tooltip.Provider delayDuration={0}>
-      {/* Bottom left: light/dark map toggle only */}
+      {/* Bottom left: traffic toggle + light/dark map toggle */}
       <div className="absolute left-4 bottom-8 z-20 flex flex-row items-center gap-2">
+        <Tooltip.Root>
+          <Tooltip.Trigger asChild>
+            <button
+              onClick={handleToggleTraffic}
+              className={`p-2.5 rounded-xl backdrop-blur-xl border transition-all duration-200 ${
+                showTraffic
+                  ? "border-amber-500/50 text-amber-400 bg-amber-500/15 hover:bg-amber-500/20"
+                  : "border-white/[0.08] text-white/50 hover:text-white hover:bg-white/10"
+              }`}
+              aria-label={showTraffic ? "Hide traffic" : "Show live traffic"}
+            >
+              <Radio width={18} height={18} />
+            </button>
+          </Tooltip.Trigger>
+          <Tooltip.Content
+            className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
+            side="top"
+            sideOffset={5}
+          >
+            {showTraffic ? "Hide traffic" : "Live traffic"}
+          </Tooltip.Content>
+        </Tooltip.Root>
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
             <button

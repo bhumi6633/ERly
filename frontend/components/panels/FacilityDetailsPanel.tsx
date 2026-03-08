@@ -2,7 +2,7 @@
 
 import { useState, memo, useEffect } from "react";
 /* eslint-disable @next/next/no-img-element */
-import { X, MapPin, ShieldCheck, Navigation, Phone } from "lucide-react";
+import { X, MapPin, ShieldCheck, Navigation, Navigation2, Phone } from "lucide-react";
 import { formatMinutes } from "@/lib/utils";
 import type { FacilityDetails, WaitTimeSnapshot } from "@/lib/types";
 
@@ -10,7 +10,8 @@ interface FacilityDetailsPanelProps {
     facility: FacilityDetails;
     onClose: () => void;
     accessToken: string;
-    onShowRoute?: () => void;
+    /** Called when the user presses the GO button — starts navigation */
+    onGo?: () => void;
     onShowEvidence?: (snapshot: WaitTimeSnapshot) => void;
     showReportButton?: boolean;
 }
@@ -27,7 +28,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     facility,
     onClose,
     accessToken,
-    onShowRoute,
+    onGo,
     onShowEvidence,
     showReportButton = true,
 }: FacilityDetailsPanelProps) {
@@ -74,11 +75,11 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     }, [facility.name, facility.locationId]);
 
     return (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-[18vw] min-w-72 max-w-[340px] flex flex-col glass rounded-2xl overflow-hidden animate-slideInRight">
+        <div className="absolute right-4 top-[72px] z-10 w-[18vw] min-w-[300px] max-w-[340px] flex flex-col glass rounded-2xl overflow-hidden animate-slideInRight">
             {/* Close Button */}
             <button
                 onClick={onClose}
-                className="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-black/40 hover:bg-black/60 text-white/40 hover:text-white/80 transition-colors"
+                className="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-black/40 hover:bg-black/60 text-white/60 hover:text-white/80 transition-colors"
             >
                 <X size={14} />
             </button>
@@ -90,7 +91,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                 )}
                 {imageError ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                        <div className="text-white/40 text-sm">Image unavailable</div>
+                        <div className="text-white/60 text-sm">Image unavailable</div>
                     </div>
                 ) : (
                     <img
@@ -109,15 +110,15 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
             </div>
 
             {/* Scrollable details */}
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
+            <div className="p-4 overflow-y-auto max-h-[calc(100vh-200px)]">
                 {/* Name */}
-                <h3 className="text-white font-semibold text-base leading-tight pr-6">
+                <h3 className="text-white font-semibold text-[15px] leading-tight pr-6">
                     {facility.name}
                 </h3>
 
                 {/* Address */}
-                <div className="flex items-start gap-1.5 text-white/40 text-xs mt-1.5">
-                    <MapPin size={11} className="mt-0.5 shrink-0" />
+                <div className="flex items-start gap-1.5 text-white/65 text-xs mt-1.5">
+                    <MapPin size={11} className="mt-0.5 shrink-0 text-white/50" />
                     <span>{facility.address}</span>
                 </div>
 
@@ -125,7 +126,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                 <div className="grid grid-cols-3 gap-2 mt-4">
                     {facility.waitTime && (
                         <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/55 mb-0.5">
+                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/70 mb-0.5">
                                 Wait
                             </div>
                             <div className="text-sm font-semibold text-white tabular-nums leading-tight">{facility.waitTime}</div>
@@ -133,7 +134,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     )}
                     {facility.travelTimeMinutes != null && (
                         <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/55 mb-0.5">
+                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/70 mb-0.5">
                                 Drive
                             </div>
                             <div className="text-sm font-semibold text-white tabular-nums leading-tight">
@@ -143,7 +144,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     )}
                     {facility.distance && (
                         <div className="px-2.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/55 mb-0.5">
+                            <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/70 mb-0.5">
                                 Away
                             </div>
                             <div className="text-sm font-semibold text-white tabular-nums leading-tight">{facility.distance}</div>
@@ -154,17 +155,17 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                 {/* Total time to care */}
                 {facility.totalTimeMinutes != null && (
                     <div className="mt-3 px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/55 mb-1">
+                        <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/70 mb-1">
                             Time to Care
                         </div>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-bold text-white tabular-nums">
                                 {Math.round(facility.totalTimeMinutes)}
                             </span>
-                            <span className="text-sm text-white/40 font-medium">min</span>
+                            <span className="text-sm text-white/60 font-medium">min</span>
                         </div>
                         {facility.travelTimeMinutes != null && (
-                            <div className="text-[10px] text-white/55 font-mono mt-0.5">
+                            <div className="text-[10px] text-white/70 font-mono mt-0.5">
                                 {formatMinutes(facility.travelTimeMinutes)} drive
                                 {" · "}
                                 {formatMinutes(Math.round(facility.totalTimeMinutes - facility.travelTimeMinutes))} wait
@@ -185,7 +186,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     </span>
                     <span className="flex items-center gap-1">
                         {evidenceLoading ? (
-                            <span className="text-[10px] text-white/50 font-mono animate-pulse">loading…</span>
+                            <span className="text-[10px] text-white/65 font-mono animate-pulse">loading…</span>
                         ) : evidenceSnapshot ? (
                             (() => {
                                 const cfg = CONFIDENCE_CONFIG[evidenceSnapshot.confidence_label] ?? CONFIDENCE_CONFIG.low;
@@ -196,7 +197,7 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                                 );
                             })()
                         ) : (
-                            <span className="text-[10px] text-white/40 font-mono">no data</span>
+                            <span className="text-[10px] text-white/60 font-mono">no data</span>
                         )}
                     </span>
                 </button>
@@ -212,17 +213,13 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             <span>{facility.phone}</span>
                         </a>
                     )}
-                    {showReportButton && (
+                    {onGo && (
                         <button
-                            onClick={() => {
-                                if (onShowRoute) {
-                                    onShowRoute();
-                                }
-                            }}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-white text-black font-bold text-xs uppercase tracking-[0.15em] hover:bg-white/90 active:scale-[0.98] transition-all duration-150"
+                            onClick={onGo}
+                            className="w-full flex items-center justify-center gap-2.5 px-4 py-[14px] rounded-xl bg-[#1a0505] hover:bg-[#240808] border border-red-900/55 hover:border-red-800/75 text-red-400 hover:text-red-300 font-bold text-sm uppercase tracking-[0.22em] shadow-[0_2px_20px_rgba(220,38,38,0.08)] hover:shadow-[0_2px_25px_rgba(220,38,38,0.14)] active:scale-[0.98] transition-all duration-200"
                         >
-                            <Navigation size={13} />
-                            <span>Review &amp; Submit Report</span>
+                            <Navigation2 size={15} />
+                            <span>GO</span>
                         </button>
                     )}
                 </div>

@@ -139,19 +139,19 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fadeIn">
-            <div className="glass rounded-2xl max-w-lg w-full mx-4 overflow-hidden animate-slideUp">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md animate-fadeIn">
+            <div className="glass rounded-3xl max-w-xl w-full mx-4 overflow-hidden animate-slideUp">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08]">
+                <div className="flex items-center justify-between px-7 py-5 border-b border-white/[0.08]">
                     <div>
-                        <h2 className="text-white font-semibold text-lg">Quick Assessment</h2>
-                        <p className="text-white/40 text-xs mt-0.5">
-                            Step {step + 1} of 4 — helps us find the right care
+                        <h2 className="text-white font-bold text-xl">Quick Assessment</h2>
+                        <p className="text-white/45 text-xs mt-1">
+                            Step {step + 1} of 4 · helps us find the right care for you
                         </p>
                     </div>
                     <button
                         onClick={onSkip}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200 text-xs font-medium"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white border border-white/[0.08] hover:border-white/[0.18] transition-all duration-200 text-sm font-medium"
                     >
                         <SkipForward size={14} />
                         Skip
@@ -159,10 +159,10 @@ export function QuestionnaireModal({ onComplete, onSkip }: QuestionnaireModalPro
                 </div>
 
                 {/* Step Content */}
-                <div className="p-6">
+                <div className="px-7 py-6">
                     {step === 0 && (
                         <div className="animate-fadeIn">
-                            <p className="text-white/60 text-sm mb-4">What brings you in today?</p>
+                            <p className="text-white/70 text-sm font-medium mb-4">What brings you in today?</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {CATEGORIES.map((cat) => {
                                     const Icon = cat.icon;

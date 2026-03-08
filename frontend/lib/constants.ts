@@ -1,4 +1,4 @@
-import type { UrgencyLevel, CareFilter } from "./types";
+import type { UrgencyLevel, CareFilter, TriageFacility } from "./types";
 import { Cross2Icon, ActivityLogIcon, HomeIcon, VideoIcon, MixIcon } from "@radix-ui/react-icons";
 import { Pill, Stethoscope } from "lucide-react";
 import React from "react";
@@ -11,7 +11,7 @@ export const MAP_CONFIG = {
     pitch: 45,
     bearing: -15,
     style: "mapbox://styles/mapbox/standard" as const,
-    lightPreset: "night" as const,
+    lightPreset: "day" as const,
 } as const;
 
 // ── Urgency Display Configuration ──
@@ -117,5 +117,42 @@ export const CARE_FILTERS: { id: CareFilter; label: string; icon: React.ReactNod
         label: "Specialty",
         icon: React.createElement(Stethoscope, { size: 18 }),
         tooltip: "Specialty services (dialysis, etc.)",
+    },
+];
+
+// ── Telehealth Services (virtual care directory) ──────────────────────────────
+export const TELEHEALTH_SERVICES: TriageFacility[] = [
+    {
+        id: "tele-1",
+        name: "Telehealth Ontario",
+        type: "telehealth",
+        address: "Province-wide · Available 24/7",
+        distance: "Virtual",
+        phone: "1-866-797-0000",
+        website: "https://www.ontario.ca/page/get-medical-advice",
+    },
+    {
+        id: "tele-2",
+        name: "Maple",
+        type: "telehealth",
+        address: "Nationwide · On-demand, 24/7",
+        distance: "Virtual",
+        website: "https://getmaple.ca",
+    },
+    {
+        id: "tele-3",
+        name: "Teladoc Health Canada",
+        type: "telehealth",
+        address: "Nationwide · On-demand",
+        distance: "Virtual",
+        website: "https://teladochealth.ca",
+    },
+    {
+        id: "tele-4",
+        name: "Health811 (Ontario)",
+        type: "telehealth",
+        address: "Province-wide · Health information & navigation",
+        distance: "Virtual",
+        phone: "8-1-1",
     },
 ];

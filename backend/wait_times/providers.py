@@ -94,9 +94,9 @@ def is_location_open(location: CareLocation, now: datetime) -> bool:
 
 
 def confidence_label(score: float) -> str:
-    if score >= 0.8:
+    if score >= 0.55:
         return "high"
-    if score >= 0.6:
+    if score >= 0.30:
         return "medium"
     return "low"
 
