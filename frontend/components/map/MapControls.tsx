@@ -7,6 +7,7 @@ import {
   InfoCircledIcon,
   Cross2Icon,
 } from "@radix-ui/react-icons";
+import { Sun, Moon } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface MapControlsProps {
@@ -18,6 +19,7 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
   const [bearing, setBearing] = useState(0);
   const [zoom, setZoom] = useState(1.5);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [mapLightMode, setMapLightMode] = useState(false); // false = night, true = day
 
   useEffect(() => {
     if (!map) return;
@@ -70,8 +72,50 @@ export const MapControls = memo(function MapControls({ map }: MapControlsProps) 
     });
   }, [map]);
 
+  const handleToggleMapTheme = useCallback(() => {
+    if (!map) return;
+    const next = !mapLightMode;
+    setMapLightMode(next);
+    try {
+      map.setConfigProperty("basemap", "lightPreset", next ? "day" : "night");
+    } catch {
+      // ignore if basemap not ready
+    }
+  }, [map, mapLightMode]);
+
   return (
     <Tooltip.Provider delayDuration={0}>
+      {/* Bottom left: light/dark map toggle only */}
+      <div className="absolute left-4 bottom-8 z-20 flex flex-row items-center gap-2">
+        <Tooltip.Root>
+          <Tooltip.Trigger asChild>
+            <button
+              onClick={handleToggleMapTheme}
+              className={`p-2.5 rounded-xl backdrop-blur-xl border transition-all duration-200 ${
+                mapLightMode
+                  ? "border-blue-500/40 text-blue-500 hover:text-blue-400 hover:bg-blue-500/15"
+                  : "border-white/8 text-white/80 hover:text-white hover:bg-white/10"
+              }`}
+              aria-label={mapLightMode ? "Switch to dark map" : "Switch to light map"}
+            >
+              {mapLightMode ? (
+                <Moon width={18} height={18} />
+              ) : (
+                <Sun width={18} height={18} />
+              )}
+            </button>
+          </Tooltip.Trigger>
+          <Tooltip.Content
+            className="select-none rounded-lg glass px-3 py-1.5 text-xs font-medium text-white z-50"
+            side="top"
+            sideOffset={5}
+          >
+            {mapLightMode ? "Dark map" : "Light map"}
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </div>
+
+      {/* Bottom right: zoom, 2D/3D, compass (N), shortcuts */}
       <div
         data-tutorial="map-controls"
         className="absolute right-4 bottom-8 z-20 flex flex-col-reverse items-end gap-2"
