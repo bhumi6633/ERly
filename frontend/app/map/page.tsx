@@ -156,6 +156,10 @@ function MapPageInner() {
   // ETA popup for the selected ambulance (HTML popup, never moves until removed)
   const ambulancePopupRef          = useRef<mapboxgl.Popup | null>(null);
 
+  // Tracks the latest fetchCareOptions AbortController so older in-flight
+  // requests can be silently cancelled when a newer call supersedes them.
+  const fetchControllerRef = useRef<AbortController | null>(null);
+
   // ── Flow state ──
   const [flowStep, setFlowStep] = useState<FlowStep>(
     isERMap ? "map" : (isWelcome ? "auth" : "map")
@@ -241,10 +245,14 @@ function MapPageInner() {
         : urgency === "urgent" ? "Urgent Care Centre"
         : "Walk-in / Clinic";
 
+    // Cancel any previous in-flight request — it's superseded by this one.
+    fetchControllerRef.current?.abort("superseded");
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
+
     setIsFetching(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
+      const timeoutId = setTimeout(() => controller.abort("timeout"), API_FETCH_TIMEOUT_MS);
       const resp = await fetch(
         `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`,
         { signal: controller.signal }
@@ -253,7 +261,25 @@ function MapPageInner() {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data: CareOptionsResponse = await resp.json();
 
-      const facilities: TriageFacility[] = data.facilities
+      let rawFacilities = data.facilities;
+
+      // If the specific type query returned nothing (e.g. local DB only has
+      // hospitals), fall back to a broader hospital+ER search so the panel
+      // is never empty.
+      if (rawFacilities.length === 0 && types !== "hospital,er,urgent_care,clinic,pharmacy") {
+        try {
+          const fbResp = await fetch(
+            `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=hospital,er,urgent_care,clinic,pharmacy`,
+            { signal: controller.signal }
+          );
+          if (fbResp.ok) {
+            const fbData: CareOptionsResponse = await fbResp.json();
+            if (fbData.facilities.length > 0) rawFacilities = fbData.facilities;
+          }
+        } catch { /* non-blocking */ }
+      }
+
+      const facilities: TriageFacility[] = rawFacilities
         .filter((f: CareOption) => f.status !== "closed")
         .map((f: CareOption) => ({
         id: String(f.facility_id),
@@ -309,6 +335,9 @@ function MapPageInner() {
         } catch { /* non-blocking — don't let ER comparison fail the main result */ }
       }
 
+      // If this request was superseded by a newer call, discard results silently.
+      if (fetchControllerRef.current !== controller) return;
+
       setTriageResult({ urgency, careType, summary, facilities, timeSavedMinutes, nearestErTotalMinutes });
       autoSelectFirstRef.current = true; // auto-select top facility when panel loads
       setShowTriagePanel(true);
@@ -327,12 +356,20 @@ function MapPageInner() {
         });
       }
     } catch (err) {
+      // If aborted because a NEWER request superseded this one → silently discard.
+      // This is the normal case for rapid tab switches / map panning.
+      if (controller.signal.aborted && fetchControllerRef.current !== controller) return;
+
       console.error("care-options fetch failed:", err);
-      setTriageResult({
-        urgency: "medium",
-        careType: careType ?? "Care",
-        summary: "Could not reach the ERly backend. Make sure the API server is running.",
-        facilities: [],
+      // Only overwrite the result if there's genuinely nothing to show.
+      setTriageResult((prev) => {
+        if (prev && prev.facilities.length > 0) return prev;
+        return {
+          urgency: "medium",
+          careType: careType ?? "Care",
+          summary: "Could not reach the care options service. Check your connection and try again.",
+          facilities: [],
+        };
       });
       setShowTriagePanel(true);
     } finally {

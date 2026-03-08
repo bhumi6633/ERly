@@ -15,5 +15,7 @@ export function getApiUrl(): string {
   return base;
 }
 
-/** Default fetch timeout (ms). Fail fast — urgency verdict is shown instantly from questionnaire data. */
-export const API_FETCH_TIMEOUT_MS = 8_000;
+/** Default fetch timeout (ms). Render free tier needs ~15 s on cold start.
+ * The urgency verdict is shown instantly from questionnaire data, so this only
+ * controls how long we wait for the facility list to populate. */
+export const API_FETCH_TIMEOUT_MS = 15_000;
