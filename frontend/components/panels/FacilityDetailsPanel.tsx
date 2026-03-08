@@ -12,23 +12,20 @@ interface FacilityDetailsPanelProps {
     accessToken: string;
     /** Called when the user presses the GO button — starts navigation */
     onGo?: () => void;
+    /** Called when the user wants to review/submit an intake report */
+    onShowRoute?: () => void;
     onShowEvidence?: (snapshot: WaitTimeSnapshot) => void;
     showReportButton?: boolean;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-const CONFIDENCE_CONFIG: Record<string, { label: string; color: string }> = {
-    high:   { label: "HIGH",   color: "text-emerald-400" },
-    medium: { label: "MEDIUM", color: "text-amber-400"   },
-    low:    { label: "LOW",    color: "text-red-400"      },
-};
-
 export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     facility,
     onClose,
     accessToken,
     onGo,
+    onShowRoute,
     onShowEvidence,
     showReportButton = true,
 }: FacilityDetailsPanelProps) {
@@ -189,10 +186,24 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             <span className="text-[10px] text-white/65 font-mono animate-pulse">loading…</span>
                         ) : evidenceSnapshot ? (
                             (() => {
-                                const cfg = CONFIDENCE_CONFIG[evidenceSnapshot.confidence_label] ?? CONFIDENCE_CONFIG.low;
+                                const score = Math.round(evidenceSnapshot.confidence_score * 100);
+                                // Interpolate red→green based on score 0-100
+                                const hue = Math.round(score * 1.2); // 0=red(0°) 100=green(120°)
+                                const scoreColor = `hsl(${hue}, 80%, 58%)`;
                                 return (
-                                    <span className={`text-[10px] font-mono ${cfg.color}`}>
-                                        {cfg.label}
+                                    <span className="flex items-center gap-1.5">
+                                        <span
+                                            className="text-[11px] font-bold font-mono tabular-nums"
+                                            style={{ color: scoreColor }}
+                                        >
+                                            {score}%
+                                        </span>
+                                        <span className="w-12 h-1.5 rounded-full overflow-hidden bg-white/10">
+                                            <span
+                                                className="h-full block rounded-full"
+                                                style={{ width: `${score}%`, background: `hsl(${hue}, 80%, 52%)` }}
+                                            />
+                                        </span>
                                     </span>
                                 );
                             })()
@@ -212,6 +223,15 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             <Phone size={15} />
                             <span>{facility.phone}</span>
                         </a>
+                    )}
+                    {onShowRoute && (
+                        <button
+                            onClick={onShowRoute}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-white/60 hover:text-white/80 text-sm font-medium transition-all duration-200"
+                        >
+                            <ShieldCheck size={14} />
+                            <span>Review Report</span>
+                        </button>
                     )}
                     {onGo && (
                         <button

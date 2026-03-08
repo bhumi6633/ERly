@@ -23,6 +23,7 @@ export interface TriageResult {
     timeSavedMinutes?: number | null;
     /** Total time at the nearest ER (travel + wait), for comparison */
     nearestErTotalMinutes?: number | null;
+  backboardReport?: any;
 }
 
 /** A healthcare facility returned by triage */
