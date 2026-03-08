@@ -12,7 +12,7 @@ Follow these steps once per machine (or after cloning).
 
 - **Node.js** 18+ and **npm** (or pnpm/yarn)
 - **Python** 3.10+
-- (Optional) **Auth0** account for login; **Mapbox** account for map; **Eleven Labs** for voice
+-  **Auth0** account for login; **Mapbox** account for map; **Eleven Labs** for voice
 
 ---
 
