@@ -19,6 +19,7 @@ export interface TriageResult {
     careType: string;
     summary: string;
     facilities: TriageFacility[];
+  backboardReport?: any;
 }
 
 /** A healthcare facility returned by triage */

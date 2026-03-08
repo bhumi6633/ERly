@@ -46,7 +46,7 @@ function MapPageInner() {
   const [mapReady, setMapReady] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const currentLocationMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const currentLocationRef = useRef<[number, number] | null>(null); // Store actual current location
+  const currentLocationRef = useRef<[number, number] | null>(null);
   const erMapLoadedRef = useRef(false);
 
   // ── Flow state ──
@@ -62,6 +62,8 @@ function MapPageInner() {
   const [searchResult, setSearchResult] = useState<TriagePopupResult | null>(null);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [showTriagePanel, setShowTriagePanel] = useState(false);
+  const backboardRef = useRef<any>(null);
+  const [backboardData, setBackboardData] = useState<any>(null);
   const [selectedFacility, setSelectedFacility] = useState<FacilityDetails | null>(null);
   const [userSeverity, setUserSeverity] = useState<number | null>(null);
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(null);
@@ -83,14 +85,14 @@ function MapPageInner() {
   ) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-    // Types: respect explicit override (toolbar filter), else infer from severity
-    const types: string = overrideTypes ?? (
-      severity === null || severity >= 4
-        ? "hospital,er"
-        : severity === 3
-        ? "urgent_care,clinic"
-        : "clinic,pharmacy"
-    );
+    let types: string;
+    if (severity === null || severity >= 4) {
+      types = "hospital,er";
+    } else if (severity === 3) {
+      types = "urgent_care,clinic";
+    } else {
+      types = "clinic,pharmacy";
+    }
 
     const urgency =
       severity === null || severity >= 4
@@ -159,7 +161,6 @@ function MapPageInner() {
       }
     } catch (err) {
       console.error("care-options fetch failed:", err);
-      // Graceful fallback: show empty result with error message
       setTriageResult({
         urgency: "medium",
         careType: careType ?? "Care",
@@ -178,35 +179,82 @@ function MapPageInner() {
     setFlowStep("questionnaire");
   }, []);
 
-  const handleQuestionnaireComplete = useCallback((data: QuestionnaireData) => {
+  // ── Questionnaire complete — wired to Backboard triage ───────────────────
+  const handleQuestionnaireComplete = useCallback(async (data: QuestionnaireData) => {
     setFlowStep("map");
     setShowToolbar(true);
     setUserSeverity(data.severity);
-    setQuestionnaireData(data); // Save questionnaire data for report
-    setAllowReportSubmission(true); // Enable report submission after questionnaire
+    setQuestionnaireData(data);
+    setAllowReportSubmission(true);
 
-    // Save symptoms if provided
-    if (data.symptoms) {
-      setLastSymptoms(data.symptoms);
-    }
+    if (data.symptoms) setLastSymptoms(data.symptoms);
 
-    // Set initial filter based on severity
-    if (data.severity && data.severity >= 4) {
-      setActiveFilter("er");
-    } else if (data.severity && data.severity === 3) {
-      setActiveFilter("walkin");
-    } else if (data.severity && data.severity <= 2) {
-      setActiveFilter("pharmacy");
-    }
+    if (data.severity && data.severity >= 4) setActiveFilter("er");
+    else if (data.severity && data.severity === 3) setActiveFilter("walkin");
+    else if (data.severity && data.severity <= 2) setActiveFilter("pharmacy");
 
-    // Fetch real care options from backend
     const center = mapRef.current?.getCenter();
     const lat = center?.lat ?? 43.47;
     const lng = center?.lng ?? -80.54;
+
     fetchCareOptions(lat, lng, data.severity);
 
-    if (!data.symptoms) {
-      setLastSymptoms("General assessment based on questionnaire");
+    if (!data.symptoms) setLastSymptoms("General assessment based on questionnaire");
+
+    // ── Backboard triage ──────────────────────────────────────────────────
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const severityMap: Record<number, string> = { 1: "mild", 2: "minor", 3: "moderate", 4: "severe", 5: "critical" };
+    const durationMap: Record<string, string> = { just_now: "just_now", few_hours: "few_hours", few_days: "few_days", week_or_more: "week_or_more" };
+
+    let patientToken = localStorage.getItem("erly_patient_token");
+    if (!patientToken) {
+      patientToken = "patient_" + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem("erly_patient_token", patientToken);
+    }
+
+    try {
+      const sessionResp = await fetch(`${API_URL}/triage/sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patient_latitude: lat, patient_longitude: lng, main_symptom: data.symptoms || "pending" }),
+      });
+      if (!sessionResp.ok) throw new Error("session failed");
+      const session = await sessionResp.json();
+
+      const assessResp = await fetch(`${API_URL}/triage/sessions/${session.id}/assess`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.id,
+          patient_token: patientToken,
+          category: data.category ?? "other",
+          severity: severityMap[data.severity ?? 3] ?? "moderate",
+          duration: durationMap[data.duration ?? "just_now"] ?? "just_now",
+          custom_text: data.symptoms ?? "",
+        }),
+      });
+      if (!assessResp.ok) throw new Error("assess failed");
+      const triage = await assessResp.json();
+
+      const report = triage.report;
+      backboardRef.current = triage;
+      setBackboardData(triage);
+      if (report?.chief_complaint) {
+        setTriageResult((prev) =>
+          prev ? {
+            ...prev,
+            summary: [report.chief_complaint, report.clinical_picture, report.recommended_action]
+              .filter(Boolean).join(" — "),
+            backboardReport: triage,
+          } : prev
+        );
+        setLastSymptoms(report.chief_complaint);
+      }
+
+      if (triage.pattern_alert) console.warn("Pattern alert:", triage.pattern_alert);
+      console.log("✅ Backboard:", triage.priority_level, triage.care_level);
+    } catch (err) {
+      console.error("Backboard failed (non-blocking):", err);
     }
   }, [fetchCareOptions]);
 
@@ -215,20 +263,16 @@ function MapPageInner() {
     setShowToolbar(true);
   }, []);
 
-  // ── Search handler (optional - updates symptoms only) ──
+  // ── Search handler ──
   const handleSearch = useCallback(async () => {
     if (!mapRef.current || !searchQuery.trim()) return;
 
     setIsSearching(true);
 
     try {
-      // Update symptoms for report (facilities already showing)
       setLastSymptoms(searchQuery.trim());
-      
-      // TODO: Replace with actual triage API call if needed
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Just update the search result message, keep facilities
       if (triageResult) {
         setSearchResult({
           urgency: triageResult.urgency,
@@ -277,18 +321,15 @@ function MapPageInner() {
   const addCurrentLocationMarker = useCallback(() => {
     if (!mapRef.current) return;
 
-    // Remove existing current location marker if any
     if (currentLocationMarkerRef.current) {
       currentLocationMarkerRef.current.remove();
     }
 
-    // Use geolocation-set position if available; fall back to map center
     const coords: [number, number] = currentLocationRef.current ?? (() => {
       const c = mapRef.current!.getCenter();
       return [c.lng, c.lat] as [number, number];
     })();
 
-    // Create blue pin element - BIGGER AND BOLDER
     const el = document.createElement('div');
     el.className = 'current-location-marker';
     el.style.width = '50px';
@@ -296,7 +337,6 @@ function MapPageInner() {
     el.style.cursor = 'default';
     el.style.zIndex = '1000';
     
-    // Bigger, bolder blue pin with pulsing animation
     el.innerHTML = `
       <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -308,16 +348,12 @@ function MapPageInner() {
             </feMerge>
           </filter>
         </defs>
-        <!-- Outer pulse ring -->
         <circle cx="25" cy="25" r="20" fill="#3B82F6" opacity="0.2">
           <animate attributeName="r" from="15" to="22" dur="1.5s" repeatCount="indefinite"/>
           <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite"/>
         </circle>
-        <!-- Outer circle -->
         <circle cx="25" cy="25" r="14" fill="#3B82F6" opacity="0.4" filter="url(#glow)"/>
-        <!-- Middle circle -->
         <circle cx="25" cy="25" r="10" fill="#3B82F6" stroke="#1E40AF" stroke-width="2"/>
-        <!-- Inner white dot -->
         <circle cx="25" cy="25" r="5" fill="#FFFFFF"/>
       </svg>
     `;
@@ -339,94 +375,58 @@ function MapPageInner() {
     if (!mapRef.current) return;
     const map = mapRef.current;
     
-    // Remove all possible route layers (including old ones)
     const layersToRemove = ['route-bright', 'route-dashes', 'route', 'route-outline', 'route-to-pin'];
     layersToRemove.forEach(layerId => {
       if (map.getLayer(layerId)) {
-        try {
-          map.removeLayer(layerId);
-          console.log(`Removed layer: ${layerId}`);
-        } catch (error) {
-          console.log(`Could not remove layer ${layerId}:`, error);
-        }
+        try { map.removeLayer(layerId); } catch (error) {}
       }
     });
     
-    // Remove sources after all layers are gone
     const sourcesToRemove = ['route', 'route-to-pin'];
     sourcesToRemove.forEach(sourceId => {
       if (map.getSource(sourceId)) {
-        try {
-          map.removeSource(sourceId);
-          console.log(`Removed source: ${sourceId}`);
-        } catch (error) {
-          console.log(`Could not remove source ${sourceId}:`, error);
-        }
+        try { map.removeSource(sourceId); } catch (error) {}
       }
     });
   }, []);
 
   // ── Draw route from user location to facility ──
   const drawRoute = useCallback(async (destination: [number, number]) => {
-    if (!mapRef.current) {
-      console.error('Map not ready');
-      return;
-    }
+    if (!mapRef.current) return;
 
     const map = mapRef.current;
-    
-    // Use saved current location or fallback to map center
     let startLng: number, startLat: number;
+
     if (currentLocationRef.current) {
       [startLng, startLat] = currentLocationRef.current;
-      console.log('Using saved current location:', [startLng, startLat]);
     } else {
       const center = map.getCenter();
       startLng = center.lng;
       startLat = center.lat;
-      console.log('Using map center as fallback:', [startLng, startLat]);
     }
     
     const [endLng, endLat] = destination;
 
-    console.log('Drawing route from:', [startLng, startLat], 'to:', [endLng, endLat]);
-
     try {
-      // Clear existing route first
       clearRoute();
-
-      // Wait to ensure layers are fully cleared
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Fetch route from Mapbox Directions API
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLng},${startLat};${endLng},${endLat}?geometries=geojson&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`;
-      console.log('Fetching route from Mapbox...');
-      
       const response = await fetch(url);
       const data = await response.json();
-
-      console.log('Mapbox response:', data);
 
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0].geometry;
         const coordinates = route.coordinates;
-        console.log('Route geometry:', route);
 
-        // Check if source already exists and remove it
         if (map.getSource('route')) {
-          console.log('Route source still exists, removing...');
           clearRoute();
           await new Promise(resolve => setTimeout(resolve, 200));
         }
 
-        // Add route source
         map.addSource('route', {
           type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: route,
-          },
+          data: { type: 'Feature', properties: {}, geometry: route },
         });
 
         // Route casing — white glow behind the main line
@@ -459,22 +459,13 @@ function MapPageInner() {
           },
         });
 
-        console.log('Route layers added successfully');
-        
-        // Add a straight line from route end to exact destination pin
         const routeEnd = coordinates[coordinates.length - 1];
-        const endToPin = {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: [routeEnd, [endLng, endLat]]
-          }
-        };
-        
         map.addSource('route-to-pin', {
           type: 'geojson',
-          data: endToPin as any,
+          data: {
+            type: 'Feature', properties: {},
+            geometry: { type: 'LineString', coordinates: [routeEnd, [endLng, endLat]] }
+          } as any,
         });
         
         map.addLayer({
@@ -491,20 +482,12 @@ function MapPageInner() {
           },
         });
 
-        // Fit map to show entire route
         const bounds = coordinates.reduce(
-          (bounds: mapboxgl.LngLatBounds, coord: [number, number]) => {
-            return bounds.extend(coord as [number, number]);
-          },
+          (bounds: mapboxgl.LngLatBounds, coord: [number, number]) =>
+            bounds.extend(coord as [number, number]),
           new mapboxgl.LngLatBounds(coordinates[0], coordinates[0])
         );
-
-        map.fitBounds(bounds, {
-          padding: 80,
-          duration: 1500,
-        });
-      } else {
-        console.error('No routes found in response');
+        map.fitBounds(bounds, { padding: 80, duration: 1500 });
       }
     } catch (error) {
       console.error('Error fetching route:', error);
@@ -513,8 +496,6 @@ function MapPageInner() {
 
   // ── Facility selection ──
   const handleFacilitySelect = useCallback((facility: TriageFacility) => {
-    console.log('🏥 Facility selected:', facility.name);
-    
     const facilityDetails: FacilityDetails = {
       id: facility.id,
       name: facility.name,
@@ -531,19 +512,13 @@ function MapPageInner() {
     };
     
     setSelectedFacility(facilityDetails);
-
-    // Draw route to the selected facility
-    console.log('🗺️ Drawing route to facility at:', facility.coordinates);
     drawRoute(facility.coordinates);
-
-    // Don't zoom in - let fitBounds in drawRoute handle the view
   }, [drawRoute]);
 
   // ── Add red markers for suggested facilities ──
   const addFacilityMarkers = useCallback((facilities: TriageFacility[]) => {
     if (!mapRef.current) return;
 
-    console.log('🔴 Adding facility markers:', facilities.length);
     clearMarkers();
 
     facilities.forEach((facility) => {
@@ -557,31 +532,12 @@ function MapPageInner() {
         el.style.alignItems = 'center';
         el.style.width = 'max-content';
         el.innerHTML = `
-          <div style="
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-          ">
+          <div style="background:linear-gradient(135deg,rgba(239,68,68,0.95),rgba(185,28,28,0.95));color:white;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);">
             ${facility.waitTime}
           </div>
-          <div style="
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid rgba(185, 28, 28, 0.95);
-          "></div>
+          <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid rgba(185,28,28,0.95);"></div>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
-                  fill="#EF4444" 
-                  stroke="#991B1B" 
-                  stroke-width="0.5"/>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#EF4444" stroke="#991B1B" stroke-width="0.5"/>
           </svg>
         `;
       } else {
@@ -589,10 +545,7 @@ function MapPageInner() {
         el.style.height = '32px';
         el.innerHTML = `
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
-                  fill="#EF4444" 
-                  stroke="#991B1B" 
-                  stroke-width="0.5"/>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#EF4444" stroke="#991B1B" stroke-width="0.5"/>
           </svg>
         `;
       }
@@ -606,17 +559,9 @@ function MapPageInner() {
         .setLngLat(facility.coordinates)
         .addTo(mapRef.current!);
 
-      console.log(`📍 Added marker for ${facility.name} at`, facility.coordinates);
-
-      // Add click handler to select facility
-      el.addEventListener('click', () => {
-        handleFacilitySelect(facility);
-      });
-
+      el.addEventListener('click', () => handleFacilitySelect(facility));
       markersRef.current.push(marker);
     });
-    
-    console.log('✅ Total markers added:', markersRef.current.length);
   }, [clearMarkers, handleFacilitySelect]);
 
   // ── Create medical report ──
@@ -625,7 +570,6 @@ function MapPageInner() {
     const category = questionnaireData?.otherCategory || questionnaireData?.category || "general";
     const duration = questionnaireData?.duration || "unknown";
     
-    // Determine urgency based on severity
     let urgency: "low" | "medium" | "high" = "medium";
     if (severity <= 2) urgency = "low";
     else if (severity >= 4) urgency = "high";
@@ -634,21 +578,19 @@ function MapPageInner() {
     const severityLabels = ["", "Mild", "Minor", "Moderate", "Severe", "Critical"];
 
     return {
-      patientInfo: {
-        timestamp: new Date().toISOString(),
-      },
+      patientInfo: { timestamp: new Date().toISOString() },
       assessment: {
-        category: category,
-        severity: severity,
+        category,
+        severity,
         severityLabel: severityLabels[severity] || "Unknown",
-        duration: duration,
+        duration,
         symptoms: lastSymptoms || "Not specified",
         urgencyLevel: urgency,
         urgencyLabel: urgencyConfig.label,
       },
       recommendation: {
         careType: triageResult?.careType || "General Care",
-        summary: triageResult?.summary || "Please visit the facility for evaluation",
+        summary: backboardData?.report?.clinical_picture ? `${backboardData.report.chief_complaint} — ${backboardData.report.clinical_picture} — ${backboardData.report.recommended_action}` : triageResult?.summary || "Please visit the facility for evaluation",
       },
       selectedFacility: {
         id: facility.id,
@@ -657,7 +599,7 @@ function MapPageInner() {
         address: facility.address,
       },
     };
-  }, [questionnaireData, lastSymptoms, triageResult]);
+  }, [questionnaireData, lastSymptoms, triageResult, backboardData]);
 
   // ── Add markers when triage results change or filter changes ──
   useEffect(() => {
@@ -680,7 +622,7 @@ function MapPageInner() {
     }
   }, [triageResult, mapReady, activeFilter, addFacilityMarkers]);
 
-  // ── Request geolocation and update blue dot + map center ──
+  // ── Request geolocation ──
   useEffect(() => {
     if (!mapReady) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
@@ -697,43 +639,49 @@ function MapPageInner() {
           essential: true,
         });
 
-        // Reposition existing blue dot to actual GPS coordinates
         if (currentLocationMarkerRef.current) {
           currentLocationMarkerRef.current.setLngLat([longitude, latitude]);
         }
       },
-      () => { /* Permission denied or unavailable — keep default center */ },
+      () => {},
       { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 }
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady]);
 
-  // ── Auto-load ER map when coming from ER button ──
+  // ── Auto-load ER map ──
   useEffect(() => {
     if (!isERMap || !mapReady || !mapRef.current || erMapLoadedRef.current) return;
-    
-    console.log('🚨 ER auto-load: Loading facilities...');
     erMapLoadedRef.current = true;
-    
     const center = mapRef.current.getCenter();
-
-    // Set state first
     setUserSeverity(5);
     setActiveFilter("er");
     setShowToolbar(true);
     setLastSymptoms("Emergency room search - direct access");
-
-    // Fetch real care options from backend (hospitals + ERs near map center)
     fetchCareOptions(center.lat, center.lng, 5);
-
-    console.log('✅ ER auto-load triggered');
   }, [isERMap, mapReady, fetchCareOptions, addFacilityMarkers]);
 
   // ── Map initialization ──
+
+  // Merge Backboard result once triageResult is set by fetchCareOptions
+  useEffect(() => {
+    if (triageResult && backboardRef.current) {
+      const triage = backboardRef.current;
+      const report = triage.report;
+      if (report?.chief_complaint) {
+        setTriageResult((prev) => prev ? {
+          ...prev,
+          summary: [report.chief_complaint, report.clinical_picture, report.recommended_action].filter(Boolean).join(" — "),
+          backboardReport: triage,
+        } : prev);
+        setLastSymptoms(report.chief_complaint);
+      }
+      backboardRef.current = null;
+    }
+  }, [triageResult]);
   useEffect(() => {
     if (mapRef.current) return;
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-
     if (!mapContainer.current) return;
 
     const map = new mapboxgl.Map({
@@ -755,31 +703,22 @@ function MapPageInner() {
 
     map.on("load", () => {
       mapRef.current = map;
-      
-      // Save initial map center as current location
       const center = map.getCenter();
       currentLocationRef.current = [center.lng, center.lat];
-      console.log('Map loaded, saved current location:', currentLocationRef.current);
-      
       setMapReady(true);
     });
 
-    // Fallback — some Mapbox versions fire style.load before load
     map.on("style.load", () => {
       if (!mapRef.current) {
         mapRef.current = map;
-        
-        // Save initial map center as current location
         const center = map.getCenter();
         currentLocationRef.current = [center.lng, center.lat];
-        console.log('Map style loaded, saved current location:', currentLocationRef.current);
-        
         setMapReady(true);
       }
     });
   }, []);
 
-  // ── Add/remove current location marker based on map state and modals ──
+  // ── Show/hide current location marker ──
   useEffect(() => {
     const shouldShowPin = mapReady && 
                          flowStep === "map" && 
@@ -790,7 +729,6 @@ function MapPageInner() {
     if (shouldShowPin) {
       addCurrentLocationMarker();
     } else {
-      // Hide the pin when any modal is open
       if (currentLocationMarkerRef.current) {
         currentLocationMarkerRef.current.remove();
         currentLocationMarkerRef.current = null;
@@ -800,7 +738,6 @@ function MapPageInner() {
 
   return (
     <div className="relative h-screen w-full">
-      {/* ── Map Container ── */}
       <div ref={mapContainer} className="h-full w-full" />
 
       {/* ── Filter Toolbar (shown only when triage results are available) ── */}
@@ -808,7 +745,6 @@ function MapPageInner() {
         <Toolbar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
       )}
 
-      {/* ── Map Controls ── */}
       {mapReady && <MapControls map={mapRef.current} />}
 
       {/* ── Triage Results Panel (Left) ── */}
@@ -838,7 +774,6 @@ function MapPageInner() {
         </button>
       )}
 
-      {/* ── Facility Details Panel (Right) ── */}
       {selectedFacility && (
         <FacilityDetailsPanel
           facility={selectedFacility}
@@ -850,14 +785,12 @@ function MapPageInner() {
           showReportButton={allowReportSubmission}
           onShowEvidence={(snap) => setEvidenceModalData({ facilityName: selectedFacility.name, snapshot: snap })}
           onShowRoute={() => {
-            // Show report preview instead of immediate route
             const report = createReport(selectedFacility);
             setReportPreview(report);
           }}
         />
       )}
 
-      {/* ── Search Result Popup ── */}
       {searchResult && !triageResult && (
         <SearchResultPopup
           result={searchResult}
@@ -865,7 +798,6 @@ function MapPageInner() {
         />
       )}
 
-      {/* ── Search / Symptom Input Bar ── */}
       {flowStep === "map" && !triageResult && !isERMap && (
         <div
           data-search-container
@@ -881,12 +813,10 @@ function MapPageInner() {
         </div>
       )}
 
-      {/* ── Auth Modal ── */}
       {flowStep === "auth" && (
         <AuthModal onContinueAsGuest={handleAuthComplete} />
       )}
 
-      {/* ── Questionnaire Modal ── */}
       {flowStep === "questionnaire" && (
         <QuestionnaireModal
           onComplete={handleQuestionnaireComplete}
@@ -894,24 +824,17 @@ function MapPageInner() {
         />
       )}
 
-      {/* ── Report Preview Modal ── */}
       {reportPreview && (
         <ReportPreviewModal
           report={reportPreview}
           onConfirm={() => {
-            // TODO: Send report to backend API
-            // Example: await fetch('/api/reports', { method: 'POST', body: JSON.stringify(reportPreview) })
-            
             setReportPreview(null);
             setShowSuccessModal(true);
           }}
-          onCancel={() => {
-            setReportPreview(null);
-          }}
+          onCancel={() => setReportPreview(null)}
         />
       )}
 
-      {/* ── Report Success Modal ── */}
       {showSuccessModal && selectedFacility && (
         <ReportSuccessModal
           facilityName={selectedFacility.name}
@@ -944,11 +867,14 @@ function MapPageInner() {
   );
 }
 
-// Wrap with Suspense for useSearchParams
 export default function MapPage() {
   return (
     <Suspense fallback={<div className="h-screen w-full bg-black" />}>
       <MapPageInner />
     </Suspense>
   );
+}
+
+function setShowTriagePanel(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }
