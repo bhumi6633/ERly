@@ -313,7 +313,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.5 }}
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent ${
+          className={`absolute bottom-6 left-1/2 -translate-x-1/2 translate-x-0 flex items-center justify-center w-12 h-12 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent ${
             isDarkMode
               ? "bg-white/10 backdrop-blur-md border border-white/20 shadow-black/20 hover:bg-white/15 hover:border-teal-400/40 text-white focus:ring-teal-400"
               : "bg-white/80 backdrop-blur-md border border-gray-200/80 shadow-gray-400/20 hover:bg-white hover:border-teal-400/50 text-gray-700 focus:ring-teal-500"
@@ -824,34 +824,12 @@ export default function Home() {
           : 'bg-white/80 border-gray-200'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          <div className="flex flex-col items-center gap-6 mb-8">
             <div className="flex items-center gap-2">
               <Activity className={`w-8 h-8 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
               <span className={`text-3xl font-bold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>ERly</span>
-            </div>
-            <div className="flex items-center gap-8">
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Privacy
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Terms
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Contact
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Instagram
-              </button>
             </div>
           </div>
           <div className={`text-center text-sm ${
