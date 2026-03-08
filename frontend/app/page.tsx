@@ -60,11 +60,19 @@ const CORE_FEATURES = [
   },
 ];
 
+const HERO_PHRASES = [
+  " guide you to care.",
+  " get you there.",
+  " close the gap.",
+];
+
 export default function Home() {
   const router = useRouter();
   const isMobile = useMobileCheck();
   const [showMobileWarning, setShowMobileWarning] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [typingIndex, setTypingIndex] = useState(0);
+  const [typingText, setTypingText] = useState("");
 
   useEffect(() => {
     // Load theme preference from localStorage, default to dark mode
@@ -78,6 +86,20 @@ export default function Home() {
     }
     router.prefetch("/map");
   }, [router]);
+
+  // Typing effect: "We" + rotating phrases
+  useEffect(() => {
+    const full = HERO_PHRASES[typingIndex];
+    if (typingText.length < full.length) {
+      const t = setTimeout(() => setTypingText(full.slice(0, typingText.length + 1)), 80);
+      return () => clearTimeout(t);
+    }
+    const pause = setTimeout(() => {
+      setTypingText("");
+      setTypingIndex((i) => (i + 1) % HERO_PHRASES.length);
+    }, 2800);
+    return () => clearTimeout(pause);
+  }, [typingIndex, typingText]);
 
   const handleMapNavigation = () => {
     if (isMobile) {
@@ -209,15 +231,16 @@ export default function Home() {
                 <span className="block mb-2">
                   Your health isn&apos;t a dot on a map.
                 </span>
-                <span className={`block ${
+                <span className={`block min-h-[1.2em] ${
                   isDarkMode 
                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400' 
                     : 'text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600'
                 }`}>
-                  We guide you to care -
+                  We{typingText}
+                  <span className="animate-pulse opacity-90">|</span>
                 </span>
                 <span className="block">
-                  no guess, no gap.
+                  Right care, right now.
                 </span>
               </h1>
 
@@ -230,17 +253,17 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button
                   onClick={handleMapNavigation}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base"
+                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base whitespace-nowrap"
                 >
-                  <Activity className="w-5 h-5" />
+                  <Activity className="w-5 h-5 shrink-0" />
                   Get Started
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button
                   onClick={() => router.push("/map?erMap=true")}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base"
+                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base whitespace-nowrap"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/>
                   </svg>
                   ER Wait Map
