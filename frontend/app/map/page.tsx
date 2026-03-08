@@ -19,6 +19,7 @@ import { ReportPreviewModal } from "@/components/modals/ReportPreviewModal";
 import { ReportSuccessModal } from "@/components/modals/ReportSuccessModal";
 import { EvidenceModal } from "@/components/modals/EvidenceModal";
 
+import { getApiUrl, API_FETCH_TIMEOUT_MS } from "@/lib/api";
 import { MAP_CONFIG, URGENCY_CONFIG, TELEHEALTH_SERVICES } from "@/lib/constants";
 import { matchesCareFilter, formatMinutes } from "@/lib/utils";
 import type {
@@ -156,7 +157,7 @@ function MapPageInner() {
     severity: number | null,
     overrideTypes?: string,
   ) => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const API_URL = getApiUrl();
 
     let types: string;
     if (severity === null || severity >= 4) {
@@ -183,9 +184,13 @@ function MapPageInner() {
 
     setIsFetching(true);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
       const resp = await fetch(
-        `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`
+        `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`,
+        { signal: controller.signal }
       );
+      clearTimeout(timeoutId);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data: CareOptionsResponse = await resp.json();
 

@@ -3,6 +3,7 @@
 import { useState, memo, useEffect } from "react";
 /* eslint-disable @next/next/no-img-element */
 import { X, MapPin, ShieldCheck, Navigation, Navigation2, Phone } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 import { formatMinutes } from "@/lib/utils";
 import type { FacilityDetails, WaitTimeSnapshot } from "@/lib/types";
 
@@ -18,7 +19,11 @@ interface FacilityDetailsPanelProps {
     showReportButton?: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const CONFIDENCE_CONFIG: Record<string, { label: string; color: string }> = {
+    high:   { label: "HIGH",   color: "text-emerald-400" },
+    medium: { label: "MEDIUM", color: "text-amber-400"   },
+    low:    { label: "LOW",    color: "text-red-400"      },
+};
 
 export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
     facility,
@@ -46,14 +51,14 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
             try {
                 // If we have a direct location ID, use it
                 if (facility.locationId != null) {
-                    const res = await fetch(`${API_URL}/wait-times/${facility.locationId}`);
+                    const res = await fetch(`${getApiUrl()}/wait-times/${facility.locationId}`);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const data: WaitTimeSnapshot = await res.json();
                     if (!cancelled) setEvidenceSnapshot(data);
                     return;
                 }
                 // Otherwise search all snapshots and match by location name
-                const res = await fetch(`${API_URL}/wait-times/`);
+                const res = await fetch(`${getApiUrl()}/wait-times/`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const all: WaitTimeSnapshot[] = await res.json();
                 const match = all.find(

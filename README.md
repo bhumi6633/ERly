@@ -116,13 +116,16 @@ Frontend will be at **http://localhost:3000**.
 | Where    | Variable                      | Required for local | Notes                                      |
 |----------|-------------------------------|--------------------|--------------------------------------------|
 | Backend  | `DATABASE_URL`                | No                 | Omit = SQLite in `./hackcanada.db`         |
-| Backend  | `ELEVENLABS_API_KEY`         | For voice          | STT + TTS (symptoms by voice, listen summary) |
+| Backend  | `ELEVENLABS_API_KEY`         | For voice          | STT (symptoms by voice). Free tier can be disabled (VPN/abuse detection); paid plan avoids this. |
 | Backend  | `BACKBOARD_API_KEY`          | For full triage    | AI triage engine                           |
 | Backend  | `BACKBOARD_ASSISTANT_ID`     | With Backboard     |                                            |
 | Backend  | `GEMINI_API_KEY`             | No                 | Image analysis for injury photos           |
 | Frontend | `NEXT_PUBLIC_API_URL`        | Yes                | `http://localhost:8000` for local backend  |
 | Frontend | `NEXT_PUBLIC_MAPBOX_TOKEN`   | Yes for map        | Mapbox public token                        |
 | Frontend | `NEXT_PUBLIC_AUTH0_*`        | No                 | Login; app runs without                    |
+
+**Why does ElevenLabs say “Unusual activity / Free Tier disabled”?**  
+Their systems can block free-tier usage when they detect VPN/proxy, shared IPs (e.g. campus or office), or usage patterns they flag. It’s not a bug in this app. You can still use the app by **typing** your symptoms. To use voice again you’d need a paid ElevenLabs plan or a different network/account.
 
 ---
 
