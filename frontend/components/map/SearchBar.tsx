@@ -3,21 +3,23 @@
 import { useState, useRef, useEffect, memo } from "react";
 import { Mic, Square } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import { getApiUrl } from "@/lib/api";
 
 async function transcribeAudio(blob: Blob): Promise<string> {
   const form = new FormData();
   form.append("file", blob, "audio.webm");
-  const res = await fetch(`${API_URL}/speech-to-text`, {
+  const res = await fetch(`${getApiUrl()}/speech-to-text`, {
     method: "POST",
     body: form,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || "Transcription failed");
+    const msg = typeof err.detail === "string" ? err.detail : (err.message ?? (err.detail?.message ?? JSON.stringify(err.detail ?? err)));
+    throw new Error(msg || "Transcription failed");
   }
   const data = await res.json();
-  return data.text ?? "";
+  const text = data.text;
+  return typeof text === "string" ? text : (text != null ? String(text) : "");
 }
 
 interface SearchBarProps {
@@ -46,6 +48,7 @@ export const SearchBar = memo(function SearchBar({
   const [showDropdown, setShowDropdown] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -66,11 +69,15 @@ export const SearchBar = memo(function SearchBar({
           return;
         }
         setIsTranscribing(true);
+        setTranscribeError(null);
         try {
           const blob = new Blob(chunksRef.current, { type: "audio/webm" });
           const text = await transcribeAudio(blob);
           onChange(value ? `${value} ${text}` : text);
           inputRef.current?.focus();
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Transcription failed";
+          setTranscribeError(msg);
         } finally {
           setIsTranscribing(false);
         }
@@ -230,6 +237,11 @@ export const SearchBar = memo(function SearchBar({
           </div>
         )}
       </div>
+      {transcribeError && (
+        <p className="mt-1.5 text-xs text-amber-400" role="alert">
+          {transcribeError}
+        </p>
+      )}
     </div>
   );
 });

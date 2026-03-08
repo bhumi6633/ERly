@@ -4,21 +4,23 @@ import { useState, useRef } from "react";
 import { Activity, Flame, HeartPulse, Brain, HelpCircle, ChevronRight, SkipForward, Mic, Square } from "lucide-react";
 import type { QuestionnaireData } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import { getApiUrl } from "@/lib/api";
 
 async function transcribeAudio(blob: Blob): Promise<string> {
     const form = new FormData();
     form.append("file", blob, "audio.webm");
-    const res = await fetch(`${API_URL}/speech-to-text`, {
+    const res = await fetch(`${getApiUrl()}/speech-to-text`, {
         method: "POST",
         body: form,
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(err.detail || "Transcription failed");
+        const msg = typeof err.detail === "string" ? err.detail : (err.message ?? (err.detail?.message ?? JSON.stringify(err.detail ?? err)));
+        throw new Error(msg || "Transcription failed");
     }
     const data = await res.json();
-    return data.text ?? "";
+    const text = data.text;
+    return typeof text === "string" ? text : (text != null ? String(text) : "");
 }
 
 interface QuestionnaireModalProps {
