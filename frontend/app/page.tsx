@@ -451,7 +451,7 @@ export default function Home() {
 
           {/* How We Navigate Section */}
           <div id="how-we-navigate" className="relative scroll-mt-4">
-          <motion.div className="text-center mb-12 mt-20" {...fadeInUp}>
+          <motion.div className="text-center mb-6 mt-20 pt-20" {...fadeInUp}>
             <h2 className={`text-3xl lg:text-5xl font-bold mb-4 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
@@ -597,7 +597,7 @@ export default function Home() {
       </section>
 
       {/* Section 3: Mission Statement - Enhanced UI */}
-      <section id="mission" className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6 scroll-mt-4">
+      <section id="mission" className="relative z-10 min-h-screen flex items-center justify-center pt-8 pb-20 px-6 scroll-mt-4">
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Enhanced Conversation Scene - Left */}
