@@ -19,7 +19,6 @@ import { ReportPreviewModal } from "@/components/modals/ReportPreviewModal";
 import { ReportSuccessModal } from "@/components/modals/ReportSuccessModal";
 import { EvidenceModal } from "@/components/modals/EvidenceModal";
 
-import { getApiUrl, API_FETCH_TIMEOUT_MS } from "@/lib/api";
 import { MAP_CONFIG, URGENCY_CONFIG, TELEHEALTH_SERVICES } from "@/lib/constants";
 import { matchesCareFilter, formatMinutes } from "@/lib/utils";
 import type {
@@ -51,87 +50,42 @@ function computeBearing(from: [number, number], to: [number, number]): number {
   return (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360;
 }
 
-// ── Draw ambulance icon to an offscreen canvas → Mapbox image (WebGL) ─────────
-// Returns a raw ImageData-like object accepted by map.addImage().
-function makeAmbulanceCanvasImage(selected: boolean): HTMLCanvasElement {
-  const W = 80, H = 64;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d")!;
-
-  // Drop shadow
-  ctx.shadowColor = selected ? "rgba(239,68,68,0.7)" : "rgba(0,0,0,0.55)";
-  ctx.shadowBlur = selected ? 10 : 6;
-
-  // Scale SVG coords (52×40 → 72×56 with 4px padding)
-  const sx = 72 / 52, sy = 56 / 40;
-  ctx.save();
-  ctx.translate(4, 4);
-  ctx.scale(sx, sy);
-
-  // Body (red)
-  ctx.fillStyle = "#ef4444";
-  ctx.strokeStyle = "#dc2626"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); roundRect(ctx, 2, 7, 40, 22, 3); ctx.fill(); ctx.stroke();
-
-  // Cab/front
-  ctx.fillStyle = "#dc2626"; ctx.strokeStyle = "#b91c1c";
-  ctx.beginPath();
-  ctx.moveTo(36,7); ctx.lineTo(49,7); ctx.quadraticCurveTo(52,7,52,10);
-  ctx.lineTo(52,24); ctx.quadraticCurveTo(52,29,49,29); ctx.lineTo(36,29); ctx.closePath();
-  ctx.fill(); ctx.stroke();
-
-  // Windshield
-  ctx.fillStyle = "rgba(191,219,254,0.85)"; ctx.strokeStyle = "transparent";
-  ctx.beginPath(); roundRect(ctx, 39, 10, 9, 8, 1.5); ctx.fill();
-
-  // White cross
-  ctx.fillStyle = "white"; ctx.shadowBlur = 0;
-  ctx.beginPath(); roundRect(ctx, 8, 15, 16, 4, 1); ctx.fill();
-  ctx.beginPath(); roundRect(ctx, 14, 9, 4, 16, 1); ctx.fill();
-
-  // Light bar
-  ctx.fillStyle = "#fbbf24";
-  ctx.beginPath(); roundRect(ctx, 12, 3, 8, 4, 2); ctx.fill();
-  ctx.fillStyle = "#3b82f6";
-  ctx.beginPath(); roundRect(ctx, 22, 3, 8, 4, 2); ctx.fill();
-
-  // Wheels
-  [[11,33],[38,33]].forEach(([cx,cy]) => {
-    ctx.fillStyle = "#1f2937"; ctx.strokeStyle = "#4b5563"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#6b7280";
-    ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2); ctx.fill();
-  });
-
-  // Cab divider
-  ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(35,8); ctx.lineTo(35,29); ctx.stroke();
-
-  // Side window
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.beginPath(); roundRect(ctx, 4, 12, 8, 8, 1); ctx.fill();
-
-  ctx.restore();
-  return canvas;
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
-  ctx.closePath();
+// ── Ambulance marker SVG (shared, module-level) ────────────────────────────────
+function ambulanceSvg(selected: boolean): string {
+  const w = selected ? 52 : 44;
+  const h = selected ? 40 : 34;
+  const style = selected
+    ? "filter:drop-shadow(0 0 8px rgba(239,68,68,0.75)) drop-shadow(0 2px 5px rgba(0,0,0,0.45));"
+    : "filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5));";
+  return `<svg width="${w}" height="${h}" viewBox="0 0 52 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="${style}">
+    <!-- Red body -->
+    <rect x="2" y="7" width="40" height="22" rx="3" fill="#ef4444" stroke="#dc2626" stroke-width="1.5"/>
+    <!-- Darker-red cab/front -->
+    <path d="M36 7 L49 7 Q52 7 52 10 L52 24 Q52 29 49 29 L36 29 Z" fill="#dc2626" stroke="#b91c1c" stroke-width="1.5"/>
+    <!-- Windshield -->
+    <rect x="39" y="10" width="9" height="8" rx="1.5" fill="#bfdbfe" opacity="0.85"/>
+    <!-- White cross -->
+    <rect x="8"  y="15" width="16" height="4" rx="1" fill="white"/>
+    <rect x="14" y="9"  width="4"  height="16" rx="1" fill="white"/>
+    <!-- Emergency light bar -->
+    <rect x="12" y="3"  width="8"  height="4" rx="2" fill="#fbbf24"/>
+    <rect x="22" y="3"  width="8"  height="4" rx="2" fill="#3b82f6"/>
+    <!-- Wheels -->
+    <circle cx="11" cy="33" r="6" fill="#1f2937" stroke="#4b5563" stroke-width="1"/>
+    <circle cx="38" cy="33" r="6" fill="#1f2937" stroke="#4b5563" stroke-width="1"/>
+    <circle cx="11" cy="33" r="2.5" fill="#6b7280"/>
+    <circle cx="38" cy="33" r="2.5" fill="#6b7280"/>
+    <!-- Cab divider -->
+    <line x1="35" y1="8" x2="35" y2="29" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+    <!-- Side window -->
+    <rect x="4" y="12" width="8" height="8" rx="1" fill="white" opacity="0.2"/>
+  </svg>`;
 }
 
 function MapPageInner() {
   const searchParams = useSearchParams();
   const isWelcome = searchParams.get("welcome") === "true";
   const isERMap = searchParams.get("erMap") === "true";
-
-  // ── Theme state ──
-  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
 
   // ── Map refs ──
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -146,14 +100,10 @@ function MapPageInner() {
   const navPuckRef = useRef<mapboxgl.Marker | null>(null);
   const navAnimFrameRef = useRef<number | null>(null);
   const navAnimStepRef = useRef(0);
-  const navAutoTrafficRef = useRef(false);
-  // Ambulance tracking (WebGL layer-based — no DOM markers)
+  // Ambulance tracking
+  const ambulanceMarkersRef        = useRef<mapboxgl.Marker[]>([]);
   const ambulancesSetupRef         = useRef(false);
   const selectedAmbulancePosRef    = useRef<[number, number] | null>(null);
-  // Cached positions — computed once per session. Only cleared when GPS fires.
-  const ambulancePosRef            = useRef<[number, number][] | null>(null);
-  // ETA popup for the selected ambulance (HTML popup, never moves until removed)
-  const ambulancePopupRef          = useRef<mapboxgl.Popup | null>(null);
 
   // ── Flow state ──
   const [flowStep, setFlowStep] = useState<FlowStep>(
@@ -187,7 +137,6 @@ function MapPageInner() {
   const [navPhase, setNavPhase] = useState<NavPhase>('idle');
   const [navigationData, setNavigationData] = useState<NavigationData | null>(null);
   const isNavigating = navPhase !== 'idle';
-  const [navShowTraffic, setNavShowTraffic] = useState(true);
 
   // ── Isochrone + geocoding state ──
   const [isochroneTarget, setIsochroneTarget] = useState<[number, number] | null>(null);
@@ -205,7 +154,7 @@ function MapPageInner() {
     severity: number | null,
     overrideTypes?: string,
   ) => {
-    const API_URL = getApiUrl();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
     let types: string;
     if (severity === null || severity >= 4) {
@@ -232,13 +181,9 @@ function MapPageInner() {
 
     setIsFetching(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
       const resp = await fetch(
-        `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`,
-        { signal: controller.signal }
+        `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`
       );
-      clearTimeout(timeoutId);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data: CareOptionsResponse = await resp.json();
 
@@ -528,8 +473,8 @@ function MapPageInner() {
     const marker = new mapboxgl.Marker({
       element: el,
       anchor: 'center',
-      pitchAlignment: 'viewport',
-      rotationAlignment: 'viewport',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
     })
       .setLngLat(coords)
       .addTo(mapRef.current);
@@ -556,76 +501,6 @@ function MapPageInner() {
       }
     });
   }, []);
-
-  // ── Navigation traffic + recenter callbacks ──
-  const enableNavTraffic = useCallback(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    const apply = () => {
-      try {
-        if (!map.getSource('mapbox-traffic')) {
-          map.addSource('mapbox-traffic', { type: 'vector', url: 'mapbox://mapbox.mapbox-traffic-v1' });
-        }
-        if (!map.getLayer('traffic')) {
-          map.addLayer({
-            id: 'traffic', type: 'line', source: 'mapbox-traffic', 'source-layer': 'traffic',
-            paint: {
-              'line-color': ['match', ['get', 'congestion'],
-                'low', '#22C55E', 'moderate', '#FBBF24', 'heavy', '#F87171', 'severe', '#DC2626', '#94a3b8',
-              ] as any,
-              'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 4] as any,
-              'line-opacity': 0.9,
-            },
-          });
-        } else {
-          map.setLayoutProperty('traffic', 'visibility', 'visible');
-        }
-        navAutoTrafficRef.current = true;
-      } catch { /* ignore */ }
-    };
-    // Wait for style to be fully loaded before adding layers
-    if (map.isStyleLoaded()) {
-      apply();
-    } else {
-      map.once('styledata', apply);
-    }
-  }, []);
-
-  const disableNavTraffic = useCallback(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    try {
-      if (map.getLayer('traffic')) map.setLayoutProperty('traffic', 'visibility', 'none');
-    } catch { /* ignore */ }
-    navAutoTrafficRef.current = false;
-  }, []);
-
-  const handleNavRecenter = useCallback(() => {
-    if (!mapRef.current || !navigationData?.startCoords) return;
-    mapRef.current.flyTo({
-      center: navigationData.startCoords,
-      zoom: 16.5, pitch: 60,
-      bearing: navigationData.initialBearing ?? 0,
-      duration: 1200, essential: true,
-    });
-  }, [navigationData]);
-
-  const handleNavOverview = useCallback(() => {
-    if (!mapRef.current || !navigationData?.startCoords) return;
-    mapRef.current.easeTo({
-      center: navigationData.startCoords,
-      zoom: 12, pitch: 30, bearing: 0, duration: 1000,
-    });
-  }, [navigationData]);
-
-  const handleNavToggleTraffic = useCallback(() => {
-    setNavShowTraffic(prev => {
-      const next = !prev;
-      if (next) enableNavTraffic();
-      else disableNavTraffic();
-      return next;
-    });
-  }, [enableNavTraffic, disableNavTraffic]);
 
   // ── Remove ambulance route layers/source ──
   const clearAmbulanceRoute = useCallback(() => {
@@ -716,118 +591,83 @@ function MapPageInner() {
     }
   }, [clearAmbulanceRoute]);
 
-  // ── Remove all ambulance GL layers/sources + ETA popup + route ──
+  // ── Remove all ambulance markers + their route ──
   const clearAmbulances = useCallback(() => {
-    const map = mapRef.current;
-    if (map) {
-      ["ambulances-selected", "ambulances-normal"].forEach(id => {
-        if (map.getLayer(id)) try { map.removeLayer(id); } catch {}
-      });
-      if (map.getSource("ambulances")) try { map.removeSource("ambulances"); } catch {}
-    }
-    if (ambulancePopupRef.current) {
-      ambulancePopupRef.current.remove();
-      ambulancePopupRef.current = null;
-    }
+    ambulanceMarkersRef.current.forEach((m) => m.remove());
+    ambulanceMarkersRef.current = [];
     clearAmbulanceRoute();
   }, [clearAmbulanceRoute]);
 
-  // ── Spawn ambulances — WebGL symbol layer (zero drift on zoom/pitch) ──
+  // ── Spawn ambulances around user — only for severity 4 / 5 ──
   const addAmbulanceMarkers = useCallback(() => {
-    const map = mapRef.current;
-    if (!map) return;
+    if (!mapRef.current) return;
     clearAmbulances();
 
-    // Compute positions once and cache — never recompute until GPS clears cache.
-    if (!ambulancePosRef.current) {
-      // Wait until GPS resolves; fall back to map center only as last resort.
-      const [baseLng, baseLat] = currentLocationRef.current ?? [map.getCenter().lng, map.getCenter().lat];
-      const jitter = () => (Math.random() - 0.5) * 0.004;
-      const deltas: [number, number][] = [
-        [ 0.013,  0.007],  // ENE — selected (closest ETA)
-        [-0.009,  0.011],  // NNW
-        [ 0.007, -0.014],  // SSE
-        [-0.016, -0.006],  // WSW
-        [ 0.020, -0.003],  // E
-      ];
-      ambulancePosRef.current = deltas.map(([dlng, dlat]): [number, number] => [
-        baseLng + dlng + jitter(),
-        baseLat + dlat + jitter(),
-      ]);
-    }
+    const [baseLng, baseLat] = currentLocationRef.current ?? (() => {
+      const c = mapRef.current!.getCenter();
+      return [c.lng, c.lat] as [number, number];
+    })();
 
-    const positions = ambulancePosRef.current;
+    const jitter = () => (Math.random() - 0.5) * 0.004;
+    // 5 positions scattered 0.5–2 km in different directions
+    const deltas: [number, number][] = [
+      [ 0.013,  0.007],  // ENE — selected (closest)
+      [-0.009,  0.011],  // NNW
+      [ 0.007, -0.014],  // SSE
+      [-0.016, -0.006],  // WSW
+      [ 0.020, -0.003],  // E
+    ];
+    const positions = deltas.map(([dlng, dlat]): [number, number] => [
+      baseLng + dlng + jitter(),
+      baseLat + dlat + jitter(),
+    ]);
+
     const selectedIdx = 0;
-    const eta = Math.floor(2 + Math.random() * 5);
+    const eta = Math.floor(2 + Math.random() * 5); // 2–6 min ETA
     selectedAmbulancePosRef.current = positions[selectedIdx];
 
-    // Register icon images once (idempotent — Mapbox ignores duplicate addImage).
-    const registerIcon = (id: string, selected: boolean) => {
-      if (!map.hasImage(id)) {
-        const canvas = makeAmbulanceCanvasImage(selected);
-        const ctx = canvas.getContext("2d")!;
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        map.addImage(id, { width: canvas.width, height: canvas.height, data: new Uint8Array(img.data.buffer) });
+    positions.forEach((pos, idx) => {
+      const isSelected = idx === selectedIdx;
+      const el = document.createElement("div");
+      el.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:default;";
+
+      if (isSelected) {
+        el.innerHTML = `
+          <div style="
+            background:#ffffff;
+            border:2.5px solid #22c55e;
+            border-radius:12px;
+            padding:5px 13px;
+            font-size:13px;
+            font-weight:800;
+            color:#16a34a;
+            white-space:nowrap;
+            box-shadow:0 3px 12px rgba(0,0,0,0.28),0 0 0 4px rgba(34,197,94,0.18);
+            font-family:ui-sans-serif,system-ui,sans-serif;
+            letter-spacing:0.01em;
+            position:relative;
+            margin-bottom:4px;
+          ">
+            ETA: ${eta} min
+            <div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #22c55e;"></div>
+            <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid white;"></div>
+          </div>
+          ${ambulanceSvg(true)}`;
+      } else {
+        el.innerHTML = ambulanceSvg(false);
       }
-    };
-    registerIcon("ambulance-selected", true);
-    registerIcon("ambulance-normal", false);
 
-    // Build GeoJSON FeatureCollection.
-    const features: GeoJSON.Feature<GeoJSON.Point, { selected: boolean }>[] = positions.map((pos, i) => ({
-      type: "Feature",
-      properties: { selected: i === selectedIdx },
-      geometry: { type: "Point", coordinates: pos },
-    }));
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: "bottom",
+        pitchAlignment: "map",
+        rotationAlignment: "map",
+      })
+        .setLngLat(pos)
+        .addTo(mapRef.current!);
 
-    map.addSource("ambulances", {
-      type: "geojson",
-      data: { type: "FeatureCollection", features },
+      ambulanceMarkersRef.current.push(marker);
     });
-
-    // Normal (non-selected) vehicles — rendered below selected.
-    map.addLayer({
-      id: "ambulances-normal",
-      type: "symbol",
-      source: "ambulances",
-      filter: ["==", ["get", "selected"], false],
-      layout: {
-        "icon-image": "ambulance-normal",
-        "icon-size": 0.55,
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-        // Keep icon flat in world space — no viewport drift.
-        "icon-pitch-alignment": "map",
-        "icon-rotation-alignment": "map",
-      },
-    });
-
-    // Selected vehicle — rendered on top.
-    map.addLayer({
-      id: "ambulances-selected",
-      type: "symbol",
-      source: "ambulances",
-      filter: ["==", ["get", "selected"], true],
-      layout: {
-        "icon-image": "ambulance-selected",
-        "icon-size": 0.65,
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-        "icon-pitch-alignment": "map",
-        "icon-rotation-alignment": "map",
-      },
-    });
-
-    // ETA callout popup anchored to selected ambulance.
-    ambulancePopupRef.current = new mapboxgl.Popup({
-      closeButton: false,
-      closeOnClick: false,
-      offset: [0, -52],
-      className: "ambulance-eta-popup",
-    })
-      .setLngLat(positions[selectedIdx])
-      .setHTML(`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:800;color:#16a34a;white-space:nowrap;">🚑 ETA: ${eta} min</div>`)
-      .addTo(map);
 
     // Green route: selected ambulance → user
     drawAmbulanceRoute(positions[selectedIdx]);
@@ -1074,9 +914,6 @@ function MapPageInner() {
   const handleGo = useCallback(async (facility: FacilityDetails) => {
     // Immediately show loading overlay — user gets instant feedback
     setNavPhase('loading');
-    // Clear ambulance markers immediately — they must not be visible during navigation
-    ambulancesSetupRef.current = false;
-    clearAmbulances();
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
@@ -1198,7 +1035,7 @@ function MapPageInner() {
       setNavPhase('navigating');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drawRoute, drawRouteFromGeometry, lastSymptoms, userSeverity, triageResult, clearAmbulances]);
+  }, [drawRoute, drawRouteFromGeometry, lastSymptoms, userSeverity, triageResult]);
 
   // ── Auto-dismiss celebration after 3.5 s ──
   useEffect(() => {
@@ -1206,17 +1043,6 @@ function MapPageInner() {
     const t = setTimeout(() => setNavPhase('navigating'), 3500);
     return () => clearTimeout(t);
   }, [navPhase]);
-
-
-  // ── Auto-enable traffic overlay when navigating ──
-  useEffect(() => {
-    if (navPhase === 'navigating' && navShowTraffic) {
-      const t = setTimeout(enableNavTraffic, 800);
-      return () => clearTimeout(t);
-    } else if (navPhase === 'idle' && navAutoTrafficRef.current) {
-      disableNavTraffic();
-    }
-  }, [navPhase, navShowTraffic, enableNavTraffic, disableNavTraffic]);
 
   // ── Isochrone reachability rings: 15 min (green) + 30 min (blue) from user ──
   useEffect(() => {
@@ -1371,8 +1197,8 @@ function MapPageInner() {
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: 'bottom',
-        pitchAlignment: 'viewport',
-        rotationAlignment: 'viewport',
+        pitchAlignment: 'map',
+        rotationAlignment: 'map',
       })
         .setLngLat(facility.coordinates)
         .addTo(mapRef.current!);
@@ -1451,11 +1277,10 @@ function MapPageInner() {
     }
   }, [triageResult, mapReady, activeFilter, addFacilityMarkers, handleFacilitySelect, isNavigating]);
 
-  // ── Ambulance overlay — severity 4 or 5 only, hidden during navigation ─────
+  // ── Ambulance overlay — severity 4 or 5 only ──────────────────────────────
   useEffect(() => {
     const isUrgent = userSeverity != null && userSeverity >= 4;
-    // Hide ambulances during any navigation phase — they interfere with the nav puck and route
-    if (mapReady && flowStep === "map" && triageResult && isUrgent && !isNavigating) {
+    if (mapReady && flowStep === "map" && triageResult && isUrgent) {
       // Guard: only set up once per session (triageResult ref changes on Backboard merge)
       if (!ambulancesSetupRef.current) {
         ambulancesSetupRef.current = true;
@@ -1468,7 +1293,7 @@ function MapPageInner() {
         clearAmbulances();
       }
     }
-  }, [mapReady, flowStep, triageResult, userSeverity, isNavigating, addAmbulanceMarkers, clearAmbulances]);
+  }, [mapReady, flowStep, triageResult, userSeverity, addAmbulanceMarkers, clearAmbulances]);
 
   // ── Request geolocation ──
   useEffect(() => {
@@ -1491,29 +1316,16 @@ function MapPageInner() {
           currentLocationMarkerRef.current.setLngLat([longitude, latitude]);
         }
 
-        // GPS has resolved — reposition ambulances around the real location.
-        // Clear the position cache so addAmbulanceMarkers recomputes at GPS coords.
-        // Wait for flyTo to finish (1200 ms) before respawning.
-        if (ambulancesSetupRef.current) {
-          ambulancePosRef.current = null;   // discard map-center positions
-          ambulancesSetupRef.current = false;
-          clearAmbulances();
-          setTimeout(() => {
-            addAmbulanceMarkers();
-            ambulancesSetupRef.current = true;
-          }, 1400);
-        } else {
-          // Ambulances not yet visible — just redraw route if selected pos is known
-          if (selectedAmbulancePosRef.current) {
-            setTimeout(() => drawAmbulanceRoute(selectedAmbulancePosRef.current!), 300);
-          }
+        // Redraw ambulance → user route so it ends exactly at the GPS blue dot
+        if (ambulancesSetupRef.current && selectedAmbulancePosRef.current) {
+          setTimeout(() => drawAmbulanceRoute(selectedAmbulancePosRef.current!), 300);
         }
       },
       () => {},
       { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 }
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, drawAmbulanceRoute, addAmbulanceMarkers, clearAmbulances]);
+  }, [mapReady, drawAmbulanceRoute]);
 
   // ── Auto-load ER map ──
   useEffect(() => {
@@ -1564,12 +1376,10 @@ function MapPageInner() {
       map.setConfigProperty("basemap", "showPlaceLabels", true);
       map.setConfigProperty("basemap", "showRoadLabels", true);
       map.setConfigProperty("basemap", "showPointOfInterestLabels", true);
-      // Use theme from localStorage, default to dark (night)
-      const savedTheme = localStorage.getItem('theme');
-      const useDarkMode = savedTheme ? savedTheme === 'dark' : true;
-      const lightPreset = useDarkMode ? 'night' as const : 'day' as const;
-      map.setConfigProperty("basemap", "lightPreset", lightPreset);
-      setIsDarkMode(useDarkMode);
+      // 🕐 Auto light: night 8 pm–6 am, dusk 5–8 pm, day otherwise
+      const h = new Date().getHours();
+      const autoPreset = (h >= 20 || h < 6) ? 'night' as const : h >= 17 ? 'dusk' as const : 'day' as const;
+      map.setConfigProperty("basemap", "lightPreset", autoPreset);
     });
 
     map.on("load", () => {
@@ -1612,11 +1422,11 @@ function MapPageInner() {
       <div ref={mapContainer} className="h-full w-full" />
 
       {/* ── Filter Toolbar (shown only when triage results are available) ── */}
-      {showToolbar && flowStep === "map" && !!triageResult && !isNavigating && (
+      {showToolbar && flowStep === "map" && !!triageResult && (
         <Toolbar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
       )}
 
-      {mapReady && navPhase === 'idle' && <MapControls map={mapRef.current} />}
+      {mapReady && <MapControls map={mapRef.current} />}
 
       {/* ── Location Search (Mapbox Geocoding API) ── */}
       {flowStep === 'map' && navPhase === 'idle' && (
@@ -1792,10 +1602,6 @@ function MapPageInner() {
             // Restore overview camera
             mapRef.current?.easeTo({ pitch: 45, bearing: 0, zoom: 13, duration: 1000 });
           }}
-          onRecenter={handleNavRecenter}
-          onOverview={handleNavOverview}
-          showTraffic={navShowTraffic}
-          onToggleTraffic={handleNavToggleTraffic}
         />
       )}
 
