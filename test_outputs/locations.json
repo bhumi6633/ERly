@@ -1,0 +1,1798 @@
+[
+    {
+        "id": 1,
+        "name": "Toronto General Hospital",
+        "type": "hospital",
+        "address": "200 Elizabeth St",
+        "city": "Toronto",
+        "latitude": 43.6594,
+        "longitude": -79.3883,
+        "phone": "416-340-4800",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "respiratory",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 1,
+            "current_wait_mins": 165,
+            "predicted_wait_on_arrival_mins": 176,
+            "capacity_score": 0.644,
+            "queue_length": 20,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T23:47:00"
+        }
+    },
+    {
+        "id": 2,
+        "name": "St. Michael's Hospital ER",
+        "type": "er",
+        "address": "36 Queen St E",
+        "city": "Toronto",
+        "latitude": 43.6534,
+        "longitude": -79.3762,
+        "phone": "416-360-4000",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 2,
+            "current_wait_mins": 105,
+            "predicted_wait_on_arrival_mins": 140,
+            "capacity_score": 0.668,
+            "queue_length": 34,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T23:47:00"
+        }
+    },
+    {
+        "id": 3,
+        "name": "Sunnybrook Health Sciences Centre",
+        "type": "hospital",
+        "address": "2075 Bayview Ave",
+        "city": "Toronto",
+        "latitude": 43.7232,
+        "longitude": -79.3765,
+        "phone": "416-480-6100",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "orthopedic",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 3,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T23:47:00"
+        }
+    },
+    {
+        "id": 4,
+        "name": "SickKids Hospital",
+        "type": "hospital",
+        "address": "555 University Ave",
+        "city": "Toronto",
+        "latitude": 43.6574,
+        "longitude": -79.3902,
+        "phone": "416-813-1500",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 4,
+            "current_wait_mins": 100,
+            "predicted_wait_on_arrival_mins": 131,
+            "capacity_score": 0.9,
+            "queue_length": 23,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 5,
+        "name": "Mount Sinai Hospital",
+        "type": "hospital",
+        "address": "600 University Ave",
+        "city": "Toronto",
+        "latitude": 43.6573,
+        "longitude": -79.3906,
+        "phone": "416-596-4200",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 5,
+            "current_wait_mins": 96,
+            "predicted_wait_on_arrival_mins": 129,
+            "capacity_score": 0.851,
+            "queue_length": 25,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 6,
+        "name": "North York General Hospital",
+        "type": "hospital",
+        "address": "4001 Leslie St",
+        "city": "North York",
+        "latitude": 43.7614,
+        "longitude": -79.3437,
+        "phone": "416-756-6000",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "orthopedic",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 6,
+            "current_wait_mins": 112,
+            "predicted_wait_on_arrival_mins": 137,
+            "capacity_score": 0.907,
+            "queue_length": 27,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 7,
+        "name": "Humber River Hospital",
+        "type": "hospital",
+        "address": "1235 Wilson Ave",
+        "city": "North York",
+        "latitude": 43.7433,
+        "longitude": -79.5021,
+        "phone": "416-242-1000",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general"
+        ],
+        "live_status": {
+            "id": 7,
+            "current_wait_mins": 102,
+            "predicted_wait_on_arrival_mins": 133,
+            "capacity_score": 0.905,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 8,
+        "name": "Scarborough Health Network \u2014 General",
+        "type": "hospital",
+        "address": "3050 Lawrence Ave E",
+        "city": "Scarborough",
+        "latitude": 43.7552,
+        "longitude": -79.2411,
+        "phone": "416-431-8200",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "respiratory",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 8,
+            "current_wait_mins": 115,
+            "predicted_wait_on_arrival_mins": 139,
+            "capacity_score": 0.99,
+            "queue_length": 27,
+            "staffing_level": "low",
+            "ambulance_load": 2,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 9,
+        "name": "Appletree Medical Group \u2014 King West",
+        "type": "urgent_care",
+        "address": "680 King St W",
+        "city": "Toronto",
+        "latitude": 43.6446,
+        "longitude": -79.4023,
+        "phone": "416-593-2273",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 9,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.208,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 10,
+        "name": "Medpoint Health Centres \u2014 Yonge & Eg",
+        "type": "urgent_care",
+        "address": "2300 Yonge St",
+        "city": "Toronto",
+        "latitude": 43.7053,
+        "longitude": -79.3979,
+        "phone": "416-932-9000",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 10,
+            "current_wait_mins": 34,
+            "predicted_wait_on_arrival_mins": 48,
+            "capacity_score": 0.531,
+            "queue_length": 9,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 11,
+        "name": "Bay-College Medical Centre",
+        "type": "urgent_care",
+        "address": "777 Bay St",
+        "city": "Toronto",
+        "latitude": 43.6591,
+        "longitude": -79.3842,
+        "phone": "416-977-7653",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 11,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.349,
+            "queue_length": 5,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T23:47:00"
+        }
+    },
+    {
+        "id": 12,
+        "name": "Women's College Hospital Walk-in",
+        "type": "clinic",
+        "address": "76 Grenville St",
+        "city": "Toronto",
+        "latitude": 43.664,
+        "longitude": -79.388,
+        "phone": "416-323-6400",
+        "is_open_24_7": false,
+        "opening_time": "08:30",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 12,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 13,
+        "name": "Rexdale Community Health Centre",
+        "type": "clinic",
+        "address": "8 Taber Rd",
+        "city": "Etobicoke",
+        "latitude": 43.7306,
+        "longitude": -79.5744,
+        "phone": "416-744-0066",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 13,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 14,
+        "name": "Shoppers Drug Mart \u2014 Yonge & Dundas",
+        "type": "pharmacy",
+        "address": "700 Yonge St",
+        "city": "Toronto",
+        "latitude": 43.6672,
+        "longitude": -79.386,
+        "phone": "416-961-0707",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 14,
+            "current_wait_mins": 7,
+            "predicted_wait_on_arrival_mins": 11,
+            "capacity_score": 0.225,
+            "queue_length": 1,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 15,
+        "name": "Rexall Pharmacy \u2014 Bay St",
+        "type": "pharmacy",
+        "address": "100 Bay St",
+        "city": "Toronto",
+        "latitude": 43.6489,
+        "longitude": -79.38,
+        "phone": "416-368-4400",
+        "is_open_24_7": false,
+        "opening_time": "07:00",
+        "closing_time": "23:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 15,
+            "current_wait_mins": 8,
+            "predicted_wait_on_arrival_mins": 12,
+            "capacity_score": 0.262,
+            "queue_length": 1,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 16,
+        "name": "Michael Garron Hospital",
+        "type": "hospital",
+        "address": "825 Coxwell Ave",
+        "city": "Toronto",
+        "latitude": 43.6892,
+        "longitude": -79.3134,
+        "phone": "416-469-6000",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 16,
+            "current_wait_mins": 95,
+            "predicted_wait_on_arrival_mins": 129,
+            "capacity_score": 0.85,
+            "queue_length": 24,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 17,
+        "name": "Credit Valley Hospital",
+        "type": "hospital",
+        "address": "2200 Eglinton Ave W",
+        "city": "Mississauga",
+        "latitude": 43.5621,
+        "longitude": -79.6762,
+        "phone": "905-813-2200",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "pediatric",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 17,
+            "current_wait_mins": 324,
+            "predicted_wait_on_arrival_mins": 324,
+            "capacity_score": 0.781,
+            "queue_length": 47,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-08T02:13:00"
+        }
+    },
+    {
+        "id": 18,
+        "name": "Trillium Health Partners \u2014 Mississauga",
+        "type": "hospital",
+        "address": "100 Queensway W",
+        "city": "Mississauga",
+        "latitude": 43.5892,
+        "longitude": -79.6431,
+        "phone": "905-848-7100",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 18,
+            "current_wait_mins": 78,
+            "predicted_wait_on_arrival_mins": 96,
+            "capacity_score": 0.695,
+            "queue_length": 21,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-08T02:13:00"
+        }
+    },
+    {
+        "id": 19,
+        "name": "William Osler Health \u2014 Brampton Civic",
+        "type": "hospital",
+        "address": "2100 Bovaird Dr E",
+        "city": "Brampton",
+        "latitude": 43.7312,
+        "longitude": -79.7621,
+        "phone": "905-494-2120",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "pediatric",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 19,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:13:00"
+        }
+    },
+    {
+        "id": 20,
+        "name": "Rouge Valley Health \u2014 Centenary",
+        "type": "hospital",
+        "address": "2867 Ellesmere Rd",
+        "city": "Scarborough",
+        "latitude": 43.7734,
+        "longitude": -79.2134,
+        "phone": "416-284-8131",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 20,
+            "current_wait_mins": 107,
+            "predicted_wait_on_arrival_mins": 133,
+            "capacity_score": 0.859,
+            "queue_length": 25,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 21,
+        "name": "Mackenzie Health \u2014 Richmond Hill",
+        "type": "hospital",
+        "address": "10 Trench St",
+        "city": "Richmond Hill",
+        "latitude": 43.8821,
+        "longitude": -79.4421,
+        "phone": "905-883-1212",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "orthopedic"
+        ],
+        "live_status": {
+            "id": 21,
+            "current_wait_mins": 111,
+            "predicted_wait_on_arrival_mins": 138,
+            "capacity_score": 0.867,
+            "queue_length": 27,
+            "staffing_level": "normal",
+            "ambulance_load": 1,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 22,
+        "name": "Markham Stouffville Hospital",
+        "type": "hospital",
+        "address": "381 Church St",
+        "city": "Markham",
+        "latitude": 43.8765,
+        "longitude": -79.2612,
+        "phone": "905-472-7000",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "pediatric",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 22,
+            "current_wait_mins": 105,
+            "predicted_wait_on_arrival_mins": 130,
+            "capacity_score": 0.99,
+            "queue_length": 24,
+            "staffing_level": "low",
+            "ambulance_load": 2,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 23,
+        "name": "Oakville Trafalgar Memorial Hospital",
+        "type": "hospital",
+        "address": "327 Reynolds St",
+        "city": "Oakville",
+        "latitude": 43.4521,
+        "longitude": -79.6912,
+        "phone": "905-845-2571",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 23,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:13:00"
+        }
+    },
+    {
+        "id": 24,
+        "name": "Appletree Medical \u2014 Queen West",
+        "type": "urgent_care",
+        "address": "798 Queen St W",
+        "city": "Toronto",
+        "latitude": 43.6451,
+        "longitude": -79.4123,
+        "phone": "416-703-6666",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 24,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.208,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 25,
+        "name": "Toronto Western Hospital Urgent Care",
+        "type": "urgent_care",
+        "address": "399 Bathurst St",
+        "city": "Toronto",
+        "latitude": 43.6542,
+        "longitude": -79.4021,
+        "phone": "416-603-2580",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "orthopedic"
+        ],
+        "live_status": {
+            "id": 25,
+            "current_wait_mins": 28,
+            "predicted_wait_on_arrival_mins": 38,
+            "capacity_score": 0.592,
+            "queue_length": 9,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 26,
+        "name": "Medpoint \u2014 Bloor & Bathurst",
+        "type": "urgent_care",
+        "address": "701 Bloor St W",
+        "city": "Toronto",
+        "latitude": 43.6642,
+        "longitude": -79.4182,
+        "phone": "416-532-9000",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 26,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.208,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 27,
+        "name": "Sheridan Walk-in Clinic",
+        "type": "urgent_care",
+        "address": "2225 Sheppard Ave E",
+        "city": "North York",
+        "latitude": 43.7721,
+        "longitude": -79.3821,
+        "phone": "416-491-5555",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 27,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.208,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 28,
+        "name": "Mississauga Urgent Care \u2014 Hurontario",
+        "type": "urgent_care",
+        "address": "3180 Hurontario St",
+        "city": "Mississauga",
+        "latitude": 43.5812,
+        "longitude": -79.6421,
+        "phone": "905-276-8888",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 28,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.262,
+            "queue_length": 6,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 29,
+        "name": "Crossways Clinic",
+        "type": "clinic",
+        "address": "2340 Dundas St W",
+        "city": "Toronto",
+        "latitude": 43.6621,
+        "longitude": -79.4521,
+        "phone": "416-604-9898",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 29,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 30,
+        "name": "East York Medical Associates",
+        "type": "clinic",
+        "address": "1200 Pape Ave",
+        "city": "Toronto",
+        "latitude": 43.6912,
+        "longitude": -79.3521,
+        "phone": "416-421-2222",
+        "is_open_24_7": false,
+        "opening_time": "08:30",
+        "closing_time": "17:30",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 30,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 31,
+        "name": "Scarborough Family Health",
+        "type": "clinic",
+        "address": "2660 Eglinton Ave E",
+        "city": "Scarborough",
+        "latitude": 43.7312,
+        "longitude": -79.2621,
+        "phone": "416-431-9000",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 31,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 32,
+        "name": "Brampton Community Health Centre",
+        "type": "clinic",
+        "address": "40 Finchgate Blvd",
+        "city": "Brampton",
+        "latitude": 43.7121,
+        "longitude": -79.7621,
+        "phone": "905-454-4777",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 32,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.185,
+            "queue_length": 4,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 33,
+        "name": "Downtown Medical Centre",
+        "type": "clinic",
+        "address": "250 Dundas St W",
+        "city": "Toronto",
+        "latitude": 43.6521,
+        "longitude": -79.3821,
+        "phone": "416-591-9999",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "18:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 33,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.16,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 34,
+        "name": "Shoppers Drug Mart \u2014 Bloor & Spadina",
+        "type": "pharmacy",
+        "address": "711 Bloor St W",
+        "city": "Toronto",
+        "latitude": 43.6642,
+        "longitude": -79.4121,
+        "phone": "416-538-2311",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 34,
+            "current_wait_mins": 8,
+            "predicted_wait_on_arrival_mins": 13,
+            "capacity_score": 0.233,
+            "queue_length": 1,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 35,
+        "name": "Shoppers Drug Mart \u2014 Scarborough Town Centre",
+        "type": "pharmacy",
+        "address": "300 Borough Dr",
+        "city": "Scarborough",
+        "latitude": 43.7734,
+        "longitude": -79.2521,
+        "phone": "416-296-0677",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 35,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.088,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 36,
+        "name": "Rexall \u2014 Mississauga Square One",
+        "type": "pharmacy",
+        "address": "100 City Centre Dr",
+        "city": "Mississauga",
+        "latitude": 43.5921,
+        "longitude": -79.6421,
+        "phone": "905-273-3333",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 36,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 37,
+        "name": "Loblaws Pharmacy \u2014 Maple Leaf Gardens",
+        "type": "pharmacy",
+        "address": "60 Carlton St",
+        "city": "Toronto",
+        "latitude": 43.6621,
+        "longitude": -79.3782,
+        "phone": "416-924-9521",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 37,
+            "current_wait_mins": 8,
+            "predicted_wait_on_arrival_mins": 12,
+            "capacity_score": 0.225,
+            "queue_length": 1,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 38,
+        "name": "Guardian Pharmacy \u2014 Etobicoke",
+        "type": "pharmacy",
+        "address": "1540 The Queensway",
+        "city": "Etobicoke",
+        "latitude": 43.6312,
+        "longitude": -79.5321,
+        "phone": "416-252-6666",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 38,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.088,
+            "queue_length": 0,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-07T21:30:00"
+        }
+    },
+    {
+        "id": 39,
+        "name": "Grand River Hospital",
+        "type": "hospital",
+        "address": "835 King St W",
+        "city": "Kitchener",
+        "latitude": 43.4489,
+        "longitude": -80.4922,
+        "phone": "519-749-4300",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "respiratory",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 39,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 40,
+        "name": "St. Mary's General Hospital",
+        "type": "hospital",
+        "address": "911 Queen's Blvd",
+        "city": "Kitchener",
+        "latitude": 43.4512,
+        "longitude": -80.4689,
+        "phone": "519-744-3311",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "cardiac",
+            "general",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 40,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 41,
+        "name": "Cambridge Memorial Hospital",
+        "type": "hospital",
+        "address": "700 Coronation Blvd",
+        "city": "Cambridge",
+        "latitude": 43.3612,
+        "longitude": -80.3145,
+        "phone": "519-621-2330",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "orthopedic",
+            "trauma"
+        ],
+        "live_status": {
+            "id": 41,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 42,
+        "name": "Guelph General Hospital",
+        "type": "hospital",
+        "address": "115 Delhi St",
+        "city": "Guelph",
+        "latitude": 43.5442,
+        "longitude": -80.2489,
+        "phone": "519-837-6440",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": true,
+        "has_emergency_department": true,
+        "specialties": [
+            "general",
+            "pediatric",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 42,
+            "current_wait_mins": 108,
+            "predicted_wait_on_arrival_mins": 144,
+            "capacity_score": 0.687,
+            "queue_length": 31,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 43,
+        "name": "Freeport Health Campus (Grand River)",
+        "type": "hospital",
+        "address": "3570 King St E",
+        "city": "Kitchener",
+        "latitude": 43.4212,
+        "longitude": -80.3821,
+        "phone": "519-749-4300",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health",
+            "rehabilitation"
+        ],
+        "live_status": {
+            "id": 43,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.687,
+            "queue_length": 19,
+            "staffing_level": "normal",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 44,
+        "name": "Waterloo Walk-in Clinic \u2014 University Plaza",
+        "type": "urgent_care",
+        "address": "170 University Ave W",
+        "city": "Waterloo",
+        "latitude": 43.4689,
+        "longitude": -80.5221,
+        "phone": "519-886-5555",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 44,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 45,
+        "name": "Kitchener Urgent Care \u2014 Fairway",
+        "type": "urgent_care",
+        "address": "385 Fairway Rd S",
+        "city": "Kitchener",
+        "latitude": 43.4212,
+        "longitude": -80.4521,
+        "phone": "519-579-5555",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 45,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 46,
+        "name": "Laurel Creek Urgent Care",
+        "type": "urgent_care",
+        "address": "650 Laurelwood Dr",
+        "city": "Waterloo",
+        "latitude": 43.4921,
+        "longitude": -80.5121,
+        "phone": "519-886-8888",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "20:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "respiratory"
+        ],
+        "live_status": {
+            "id": 46,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 47,
+        "name": "Cambridge Urgent Care \u2014 Hespeler",
+        "type": "urgent_care",
+        "address": "500 Franklin Blvd",
+        "city": "Cambridge",
+        "latitude": 43.4212,
+        "longitude": -80.3121,
+        "phone": "519-654-5555",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 47,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 48,
+        "name": "Guelph Walk-in Medical Clinic",
+        "type": "urgent_care",
+        "address": "104 Wyndham St N",
+        "city": "Guelph",
+        "latitude": 43.5489,
+        "longitude": -80.2489,
+        "phone": "519-822-2222",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 48,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 49,
+        "name": "Uptown Waterloo Medical Walk-in",
+        "type": "urgent_care",
+        "address": "75 King St S",
+        "city": "Waterloo",
+        "latitude": 43.4642,
+        "longitude": -80.5189,
+        "phone": "519-888-1234",
+        "is_open_24_7": false,
+        "opening_time": "08:30",
+        "closing_time": "19:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 49,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.348,
+            "queue_length": 9,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 50,
+        "name": "UW Campus Health Services",
+        "type": "clinic",
+        "address": "200 University Ave W",
+        "city": "Waterloo",
+        "latitude": 43.4702,
+        "longitude": -80.5412,
+        "phone": "519-888-4096",
+        "is_open_24_7": false,
+        "opening_time": "08:30",
+        "closing_time": "16:30",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 50,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 51,
+        "name": "Laurier Student Health",
+        "type": "clinic",
+        "address": "75 University Ave W",
+        "city": "Waterloo",
+        "latitude": 43.4662,
+        "longitude": -80.5252,
+        "phone": "519-884-0710",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "16:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 51,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 52,
+        "name": "Waterloo North Family Health",
+        "type": "clinic",
+        "address": "500 Parkside Dr",
+        "city": "Waterloo",
+        "latitude": 43.4821,
+        "longitude": -80.5321,
+        "phone": "519-886-5550",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "pediatric"
+        ],
+        "live_status": {
+            "id": 52,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 53,
+        "name": "Kitchener Downtown Community Health",
+        "type": "clinic",
+        "address": "44 Francis St S",
+        "city": "Kitchener",
+        "latitude": 43.4512,
+        "longitude": -80.4889,
+        "phone": "519-576-1000",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general",
+            "mental_health"
+        ],
+        "live_status": {
+            "id": 53,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 54,
+        "name": "Cambridge Family Medicine",
+        "type": "clinic",
+        "address": "150 Main St",
+        "city": "Cambridge",
+        "latitude": 43.3589,
+        "longitude": -80.3121,
+        "phone": "519-621-3333",
+        "is_open_24_7": false,
+        "opening_time": "08:30",
+        "closing_time": "17:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 54,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 55,
+        "name": "Conestoga College Health Services",
+        "type": "clinic",
+        "address": "299 Doon Valley Dr",
+        "city": "Kitchener",
+        "latitude": 43.3912,
+        "longitude": -80.4121,
+        "phone": "519-748-5220",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "16:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 55,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.25,
+            "queue_length": 7,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T02:26:00"
+        }
+    },
+    {
+        "id": 56,
+        "name": "Shoppers Drug Mart \u2014 Waterloo Uptown",
+        "type": "pharmacy",
+        "address": "75 King St S",
+        "city": "Waterloo",
+        "latitude": 43.4642,
+        "longitude": -80.5192,
+        "phone": "519-886-1111",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 56,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 57,
+        "name": "Shoppers Drug Mart \u2014 University & Weber",
+        "type": "pharmacy",
+        "address": "255 Weber St N",
+        "city": "Waterloo",
+        "latitude": 43.4721,
+        "longitude": -80.5121,
+        "phone": "519-886-2222",
+        "is_open_24_7": true,
+        "opening_time": null,
+        "closing_time": null,
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 57,
+            "current_wait_mins": 5,
+            "predicted_wait_on_arrival_mins": 7,
+            "capacity_score": 0.081,
+            "queue_length": 3,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 58,
+        "name": "Rexall \u2014 Kitchener Downtown",
+        "type": "pharmacy",
+        "address": "150 King St W",
+        "city": "Kitchener",
+        "latitude": 43.4512,
+        "longitude": -80.4821,
+        "phone": "519-579-3333",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 58,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 59,
+        "name": "Shoppers Drug Mart \u2014 Cambridge Centre",
+        "type": "pharmacy",
+        "address": "355 Hespeler Rd",
+        "city": "Cambridge",
+        "latitude": 43.3912,
+        "longitude": -80.3121,
+        "phone": "519-623-4444",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 59,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 60,
+        "name": "Rexall \u2014 Guelph Stone Road",
+        "type": "pharmacy",
+        "address": "485 Stone Rd E",
+        "city": "Guelph",
+        "latitude": 43.5121,
+        "longitude": -80.2289,
+        "phone": "519-824-5555",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 60,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 61,
+        "name": "Guardian Pharmacy \u2014 Waterloo Boardwalk",
+        "type": "pharmacy",
+        "address": "330 The Boardwalk",
+        "city": "Waterloo",
+        "latitude": 43.4589,
+        "longitude": -80.4989,
+        "phone": "519-886-6666",
+        "is_open_24_7": false,
+        "opening_time": "09:00",
+        "closing_time": "21:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 61,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    },
+    {
+        "id": 62,
+        "name": "Shoppers Drug Mart \u2014 Kitchener Fairway",
+        "type": "pharmacy",
+        "address": "2960 Kingsway Dr",
+        "city": "Kitchener",
+        "latitude": 43.4212,
+        "longitude": -80.4521,
+        "phone": "519-579-7777",
+        "is_open_24_7": false,
+        "opening_time": "08:00",
+        "closing_time": "22:00",
+        "accepts_ambulance": false,
+        "has_emergency_department": false,
+        "specialties": [
+            "general"
+        ],
+        "live_status": {
+            "id": 62,
+            "current_wait_mins": 480,
+            "predicted_wait_on_arrival_mins": 480,
+            "capacity_score": 0.081,
+            "queue_length": 2,
+            "staffing_level": "high",
+            "ambulance_load": 0,
+            "last_updated_at": "2026-03-08T00:26:00"
+        }
+    }
+]

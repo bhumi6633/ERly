@@ -1,0 +1,880 @@
+{
+    "generated_at": "2026-03-08T02:26:45.328378+00:00",
+    "user_location": {
+        "lat": 43.49,
+        "lng": -80.54
+    },
+    "count": 5,
+    "facilities": [
+        {
+            "facility_id": 39,
+            "name": "Grand River Hospital",
+            "type": "hospital",
+            "address": "835 King St W",
+            "latitude": 43.4489,
+            "longitude": -80.4922,
+            "distance_km": 5.98,
+            "travel_time_minutes": 10.2,
+            "wait_time_minutes": 108,
+            "wait_time_range": [
+                75,
+                144
+            ],
+            "total_time_minutes": 118.2,
+            "recommendation_score": 0.008389,
+            "confidence_score": 0.416,
+            "confidence_label": "low",
+            "source_kind": "provincial_benchmark",
+            "status": "estimated",
+            "snapshot": {
+                "id": 159,
+                "care_location_id": 39,
+                "source_kind": "provincial_benchmark",
+                "source_name": "ERly fused wait-time engine",
+                "status": "estimated",
+                "confidence_score": 0.416,
+                "confidence_label": "low",
+                "overall_wait_minutes": 108,
+                "overall_wait_min_minutes": 75,
+                "overall_wait_max_minutes": 144,
+                "capacity_score": 0.687,
+                "queue_length": 31,
+                "occupancy_probability": 0.666,
+                "diversion_probability": 0.002,
+                "last_reported_at": "2026-03-08T02:26:00",
+                "created_at": "2026-03-08T02:26:29.138171",
+                "scenarios": [
+                    {
+                        "scenario_code": "ctas_1",
+                        "label": "CTAS 1 \u2014 Resuscitation",
+                        "wait_minutes": 0,
+                        "wait_min_minutes": 0,
+                        "wait_max_minutes": 1,
+                        "target_minutes": 0,
+                        "probability_within_target": 0.496,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "immediate_emergency",
+                        "label": "Immediate emergency",
+                        "wait_minutes": 12,
+                        "wait_min_minutes": 7,
+                        "wait_max_minutes": 17,
+                        "target_minutes": 10,
+                        "probability_within_target": 0.393,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_2",
+                        "label": "CTAS 2 \u2014 Emergent",
+                        "wait_minutes": 19,
+                        "wait_min_minutes": 14,
+                        "wait_max_minutes": 34,
+                        "target_minutes": 15,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ambulance_offload",
+                        "label": "Ambulance offload",
+                        "wait_minutes": 43,
+                        "wait_min_minutes": 32,
+                        "wait_max_minutes": 54,
+                        "target_minutes": 25,
+                        "probability_within_target": 0.344,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_3",
+                        "label": "CTAS 3 \u2014 Urgent",
+                        "wait_minutes": 38,
+                        "wait_min_minutes": 28,
+                        "wait_max_minutes": 69,
+                        "target_minutes": 30,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ctas_4",
+                        "label": "CTAS 4 \u2014 Less Urgent",
+                        "wait_minutes": 76,
+                        "wait_min_minutes": 57,
+                        "wait_max_minutes": 138,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.313,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "standard_er",
+                        "label": "Standard ER",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 65,
+                        "wait_max_minutes": 101,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.432,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_5",
+                        "label": "CTAS 5 \u2014 Non-Urgent",
+                        "wait_minutes": 151,
+                        "wait_min_minutes": 113,
+                        "wait_max_minutes": 276,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.316,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "low_acuity_non_urgent",
+                        "label": "Low-acuity / non-urgent",
+                        "wait_minutes": 111,
+                        "wait_min_minutes": 88,
+                        "wait_max_minutes": 134,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.537,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    }
+                ],
+                "source_records": [
+                    {
+                        "source_kind": "provincial_benchmark",
+                        "source_name": "Ontario Health provincial benchmark model",
+                        "status": "estimated",
+                        "confidence_score": 0.48,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 125,
+                        "wait_min_minutes": 87,
+                        "wait_max_minutes": 168,
+                        "metadata_json": "{\"evidence_tier\": \"provincial_benchmark\", \"match_strategy\": \"benchmark_model\", \"benchmark_url\": \"https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\", \"ctas_guidelines_url\": \"https://caep.ca/resources/ctas/\", \"formula_explanation\": \"est_wait = ontario_median_physician_wait \\u00d7 size_factor \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"ontario_median_physician_wait_minutes\": {\"value\": 99, \"source_citation\": \"Health Quality Ontario, Time spent in emergency departments 2022-23. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"size_factor\": {\"value\": 1.15, \"source_citation\": \"Derived from HQO volume-weighted ED data for 'hospital' facility type. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}}, \"ontario_median_minutes\": 99, \"range_low\": 87, \"range_high\": 168, \"capacity_score\": 0.575, \"queue_length\": 31, \"occupancy_probability\": 0.598, \"diversion_probability\": 0.0}"
+                    },
+                    {
+                        "source_kind": "care_setting_proxy",
+                        "source_name": "ERly care-setting proxy (CIHI-calibrated baseline)",
+                        "status": "estimated",
+                        "confidence_score": 0.32,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 58,
+                        "wait_max_minutes": 108,
+                        "metadata_json": "{\"evidence_tier\": \"care_setting_proxy\", \"match_strategy\": \"facility_type_baseline\", \"source_url\": \"https://www.cihi.ca/en/nacrs-metadata\", \"formula_explanation\": \"est_wait = facility_type_baseline_wait \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"facility_type_baseline_wait_minutes\": {\"value\": 76, \"source_citation\": \"ERly baseline for hospital: 76 min. Derived from CIHI NACRS 2022-23 median visit durations. https://www.cihi.ca/en/nacrs-metadata\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"care_setting_proxy_factor\": {\"value\": 1.0, \"source_citation\": \"ERly CARE_SETTING_PROXY_FACTORS['hospital'] = 1.0. Derived from CIHI NACRS weighted facility-type median visit durations.\"}}, \"capacity_score\": 0.854, \"queue_length\": 31, \"occupancy_probability\": 0.769, \"diversion_probability\": 0.005, \"open_now\": true, \"provider_note\": \"Evidence floor \\u2014 deterministic estimate from CIHI-calibrated facility-type baselines. Confidence intentionally low (0.32). Always prefer official or aggregator sources.\"}"
+                    }
+                ],
+                "care_location": {
+                    "id": 39,
+                    "name": "Grand River Hospital",
+                    "type": "hospital",
+                    "city": "Kitchener",
+                    "latitude": 43.4489,
+                    "longitude": -80.4922
+                }
+            }
+        },
+        {
+            "facility_id": 40,
+            "name": "St. Mary's General Hospital",
+            "type": "hospital",
+            "address": "911 Queen's Blvd",
+            "latitude": 43.4512,
+            "longitude": -80.4689,
+            "distance_km": 7.18,
+            "travel_time_minutes": 12.2,
+            "wait_time_minutes": 108,
+            "wait_time_range": [
+                75,
+                144
+            ],
+            "total_time_minutes": 120.2,
+            "recommendation_score": 0.008251,
+            "confidence_score": 0.416,
+            "confidence_label": "low",
+            "source_kind": "provincial_benchmark",
+            "status": "estimated",
+            "snapshot": {
+                "id": 161,
+                "care_location_id": 40,
+                "source_kind": "provincial_benchmark",
+                "source_name": "ERly fused wait-time engine",
+                "status": "estimated",
+                "confidence_score": 0.416,
+                "confidence_label": "low",
+                "overall_wait_minutes": 108,
+                "overall_wait_min_minutes": 75,
+                "overall_wait_max_minutes": 144,
+                "capacity_score": 0.687,
+                "queue_length": 31,
+                "occupancy_probability": 0.666,
+                "diversion_probability": 0.002,
+                "last_reported_at": "2026-03-08T02:26:00",
+                "created_at": "2026-03-08T02:26:29.154978",
+                "scenarios": [
+                    {
+                        "scenario_code": "ctas_1",
+                        "label": "CTAS 1 \u2014 Resuscitation",
+                        "wait_minutes": 0,
+                        "wait_min_minutes": 0,
+                        "wait_max_minutes": 1,
+                        "target_minutes": 0,
+                        "probability_within_target": 0.496,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "immediate_emergency",
+                        "label": "Immediate emergency",
+                        "wait_minutes": 12,
+                        "wait_min_minutes": 7,
+                        "wait_max_minutes": 17,
+                        "target_minutes": 10,
+                        "probability_within_target": 0.393,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_2",
+                        "label": "CTAS 2 \u2014 Emergent",
+                        "wait_minutes": 19,
+                        "wait_min_minutes": 14,
+                        "wait_max_minutes": 34,
+                        "target_minutes": 15,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ambulance_offload",
+                        "label": "Ambulance offload",
+                        "wait_minutes": 43,
+                        "wait_min_minutes": 32,
+                        "wait_max_minutes": 54,
+                        "target_minutes": 25,
+                        "probability_within_target": 0.344,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_3",
+                        "label": "CTAS 3 \u2014 Urgent",
+                        "wait_minutes": 38,
+                        "wait_min_minutes": 28,
+                        "wait_max_minutes": 69,
+                        "target_minutes": 30,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ctas_4",
+                        "label": "CTAS 4 \u2014 Less Urgent",
+                        "wait_minutes": 76,
+                        "wait_min_minutes": 57,
+                        "wait_max_minutes": 138,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.313,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "standard_er",
+                        "label": "Standard ER",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 65,
+                        "wait_max_minutes": 101,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.432,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_5",
+                        "label": "CTAS 5 \u2014 Non-Urgent",
+                        "wait_minutes": 151,
+                        "wait_min_minutes": 113,
+                        "wait_max_minutes": 276,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.316,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "low_acuity_non_urgent",
+                        "label": "Low-acuity / non-urgent",
+                        "wait_minutes": 111,
+                        "wait_min_minutes": 88,
+                        "wait_max_minutes": 134,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.537,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    }
+                ],
+                "source_records": [
+                    {
+                        "source_kind": "provincial_benchmark",
+                        "source_name": "Ontario Health provincial benchmark model",
+                        "status": "estimated",
+                        "confidence_score": 0.48,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 125,
+                        "wait_min_minutes": 87,
+                        "wait_max_minutes": 168,
+                        "metadata_json": "{\"evidence_tier\": \"provincial_benchmark\", \"match_strategy\": \"benchmark_model\", \"benchmark_url\": \"https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\", \"ctas_guidelines_url\": \"https://caep.ca/resources/ctas/\", \"formula_explanation\": \"est_wait = ontario_median_physician_wait \\u00d7 size_factor \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"ontario_median_physician_wait_minutes\": {\"value\": 99, \"source_citation\": \"Health Quality Ontario, Time spent in emergency departments 2022-23. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"size_factor\": {\"value\": 1.15, \"source_citation\": \"Derived from HQO volume-weighted ED data for 'hospital' facility type. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}}, \"ontario_median_minutes\": 99, \"range_low\": 87, \"range_high\": 168, \"capacity_score\": 0.575, \"queue_length\": 31, \"occupancy_probability\": 0.598, \"diversion_probability\": 0.0}"
+                    },
+                    {
+                        "source_kind": "care_setting_proxy",
+                        "source_name": "ERly care-setting proxy (CIHI-calibrated baseline)",
+                        "status": "estimated",
+                        "confidence_score": 0.32,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 58,
+                        "wait_max_minutes": 108,
+                        "metadata_json": "{\"evidence_tier\": \"care_setting_proxy\", \"match_strategy\": \"facility_type_baseline\", \"source_url\": \"https://www.cihi.ca/en/nacrs-metadata\", \"formula_explanation\": \"est_wait = facility_type_baseline_wait \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"facility_type_baseline_wait_minutes\": {\"value\": 76, \"source_citation\": \"ERly baseline for hospital: 76 min. Derived from CIHI NACRS 2022-23 median visit durations. https://www.cihi.ca/en/nacrs-metadata\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"care_setting_proxy_factor\": {\"value\": 1.0, \"source_citation\": \"ERly CARE_SETTING_PROXY_FACTORS['hospital'] = 1.0. Derived from CIHI NACRS weighted facility-type median visit durations.\"}}, \"capacity_score\": 0.854, \"queue_length\": 31, \"occupancy_probability\": 0.769, \"diversion_probability\": 0.005, \"open_now\": true, \"provider_note\": \"Evidence floor \\u2014 deterministic estimate from CIHI-calibrated facility-type baselines. Confidence intentionally low (0.32). Always prefer official or aggregator sources.\"}"
+                    }
+                ],
+                "care_location": {
+                    "id": 40,
+                    "name": "St. Mary's General Hospital",
+                    "type": "hospital",
+                    "city": "Kitchener",
+                    "latitude": 43.4512,
+                    "longitude": -80.4689
+                }
+            }
+        },
+        {
+            "facility_id": 41,
+            "name": "Cambridge Memorial Hospital",
+            "type": "hospital",
+            "address": "700 Coronation Blvd",
+            "latitude": 43.3612,
+            "longitude": -80.3145,
+            "distance_km": 23.17,
+            "travel_time_minutes": 39.4,
+            "wait_time_minutes": 108,
+            "wait_time_range": [
+                75,
+                144
+            ],
+            "total_time_minutes": 147.4,
+            "recommendation_score": 0.006739,
+            "confidence_score": 0.416,
+            "confidence_label": "low",
+            "source_kind": "provincial_benchmark",
+            "status": "estimated",
+            "snapshot": {
+                "id": 157,
+                "care_location_id": 41,
+                "source_kind": "provincial_benchmark",
+                "source_name": "ERly fused wait-time engine",
+                "status": "estimated",
+                "confidence_score": 0.416,
+                "confidence_label": "low",
+                "overall_wait_minutes": 108,
+                "overall_wait_min_minutes": 75,
+                "overall_wait_max_minutes": 144,
+                "capacity_score": 0.687,
+                "queue_length": 31,
+                "occupancy_probability": 0.666,
+                "diversion_probability": 0.002,
+                "last_reported_at": "2026-03-08T02:26:00",
+                "created_at": "2026-03-08T02:26:29.130684",
+                "scenarios": [
+                    {
+                        "scenario_code": "ctas_1",
+                        "label": "CTAS 1 \u2014 Resuscitation",
+                        "wait_minutes": 0,
+                        "wait_min_minutes": 0,
+                        "wait_max_minutes": 1,
+                        "target_minutes": 0,
+                        "probability_within_target": 0.496,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "immediate_emergency",
+                        "label": "Immediate emergency",
+                        "wait_minutes": 12,
+                        "wait_min_minutes": 7,
+                        "wait_max_minutes": 17,
+                        "target_minutes": 10,
+                        "probability_within_target": 0.393,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_2",
+                        "label": "CTAS 2 \u2014 Emergent",
+                        "wait_minutes": 19,
+                        "wait_min_minutes": 14,
+                        "wait_max_minutes": 34,
+                        "target_minutes": 15,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ambulance_offload",
+                        "label": "Ambulance offload",
+                        "wait_minutes": 43,
+                        "wait_min_minutes": 32,
+                        "wait_max_minutes": 54,
+                        "target_minutes": 25,
+                        "probability_within_target": 0.344,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_3",
+                        "label": "CTAS 3 \u2014 Urgent",
+                        "wait_minutes": 38,
+                        "wait_min_minutes": 28,
+                        "wait_max_minutes": 69,
+                        "target_minutes": 30,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ctas_4",
+                        "label": "CTAS 4 \u2014 Less Urgent",
+                        "wait_minutes": 76,
+                        "wait_min_minutes": 57,
+                        "wait_max_minutes": 138,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.313,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "standard_er",
+                        "label": "Standard ER",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 65,
+                        "wait_max_minutes": 101,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.432,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_5",
+                        "label": "CTAS 5 \u2014 Non-Urgent",
+                        "wait_minutes": 151,
+                        "wait_min_minutes": 113,
+                        "wait_max_minutes": 276,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.316,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "low_acuity_non_urgent",
+                        "label": "Low-acuity / non-urgent",
+                        "wait_minutes": 111,
+                        "wait_min_minutes": 88,
+                        "wait_max_minutes": 134,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.537,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    }
+                ],
+                "source_records": [
+                    {
+                        "source_kind": "provincial_benchmark",
+                        "source_name": "Ontario Health provincial benchmark model",
+                        "status": "estimated",
+                        "confidence_score": 0.48,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 125,
+                        "wait_min_minutes": 87,
+                        "wait_max_minutes": 168,
+                        "metadata_json": "{\"evidence_tier\": \"provincial_benchmark\", \"match_strategy\": \"benchmark_model\", \"benchmark_url\": \"https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\", \"ctas_guidelines_url\": \"https://caep.ca/resources/ctas/\", \"formula_explanation\": \"est_wait = ontario_median_physician_wait \\u00d7 size_factor \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"ontario_median_physician_wait_minutes\": {\"value\": 99, \"source_citation\": \"Health Quality Ontario, Time spent in emergency departments 2022-23. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"size_factor\": {\"value\": 1.15, \"source_citation\": \"Derived from HQO volume-weighted ED data for 'hospital' facility type. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}}, \"ontario_median_minutes\": 99, \"range_low\": 87, \"range_high\": 168, \"capacity_score\": 0.575, \"queue_length\": 31, \"occupancy_probability\": 0.598, \"diversion_probability\": 0.0}"
+                    },
+                    {
+                        "source_kind": "care_setting_proxy",
+                        "source_name": "ERly care-setting proxy (CIHI-calibrated baseline)",
+                        "status": "estimated",
+                        "confidence_score": 0.32,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 58,
+                        "wait_max_minutes": 108,
+                        "metadata_json": "{\"evidence_tier\": \"care_setting_proxy\", \"match_strategy\": \"facility_type_baseline\", \"source_url\": \"https://www.cihi.ca/en/nacrs-metadata\", \"formula_explanation\": \"est_wait = facility_type_baseline_wait \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"facility_type_baseline_wait_minutes\": {\"value\": 76, \"source_citation\": \"ERly baseline for hospital: 76 min. Derived from CIHI NACRS 2022-23 median visit durations. https://www.cihi.ca/en/nacrs-metadata\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"care_setting_proxy_factor\": {\"value\": 1.0, \"source_citation\": \"ERly CARE_SETTING_PROXY_FACTORS['hospital'] = 1.0. Derived from CIHI NACRS weighted facility-type median visit durations.\"}}, \"capacity_score\": 0.854, \"queue_length\": 31, \"occupancy_probability\": 0.769, \"diversion_probability\": 0.005, \"open_now\": true, \"provider_note\": \"Evidence floor \\u2014 deterministic estimate from CIHI-calibrated facility-type baselines. Confidence intentionally low (0.32). Always prefer official or aggregator sources.\"}"
+                    }
+                ],
+                "care_location": {
+                    "id": 41,
+                    "name": "Cambridge Memorial Hospital",
+                    "type": "hospital",
+                    "city": "Cambridge",
+                    "latitude": 43.3612,
+                    "longitude": -80.3145
+                }
+            }
+        },
+        {
+            "facility_id": 42,
+            "name": "Guelph General Hospital",
+            "type": "hospital",
+            "address": "115 Delhi St",
+            "latitude": 43.5442,
+            "longitude": -80.2489,
+            "distance_km": 24.23,
+            "travel_time_minutes": 41.2,
+            "wait_time_minutes": 108,
+            "wait_time_range": [
+                75,
+                144
+            ],
+            "total_time_minutes": 149.2,
+            "recommendation_score": 0.006658,
+            "confidence_score": 0.416,
+            "confidence_label": "low",
+            "source_kind": "provincial_benchmark",
+            "status": "estimated",
+            "snapshot": {
+                "id": 160,
+                "care_location_id": 42,
+                "source_kind": "provincial_benchmark",
+                "source_name": "ERly fused wait-time engine",
+                "status": "estimated",
+                "confidence_score": 0.416,
+                "confidence_label": "low",
+                "overall_wait_minutes": 108,
+                "overall_wait_min_minutes": 75,
+                "overall_wait_max_minutes": 144,
+                "capacity_score": 0.687,
+                "queue_length": 31,
+                "occupancy_probability": 0.666,
+                "diversion_probability": 0.002,
+                "last_reported_at": "2026-03-08T02:26:00",
+                "created_at": "2026-03-08T02:26:29.141167",
+                "scenarios": [
+                    {
+                        "scenario_code": "ctas_1",
+                        "label": "CTAS 1 \u2014 Resuscitation",
+                        "wait_minutes": 0,
+                        "wait_min_minutes": 0,
+                        "wait_max_minutes": 1,
+                        "target_minutes": 0,
+                        "probability_within_target": 0.496,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "immediate_emergency",
+                        "label": "Immediate emergency",
+                        "wait_minutes": 12,
+                        "wait_min_minutes": 7,
+                        "wait_max_minutes": 17,
+                        "target_minutes": 10,
+                        "probability_within_target": 0.393,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_2",
+                        "label": "CTAS 2 \u2014 Emergent",
+                        "wait_minutes": 19,
+                        "wait_min_minutes": 14,
+                        "wait_max_minutes": 34,
+                        "target_minutes": 15,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ambulance_offload",
+                        "label": "Ambulance offload",
+                        "wait_minutes": 43,
+                        "wait_min_minutes": 32,
+                        "wait_max_minutes": 54,
+                        "target_minutes": 25,
+                        "probability_within_target": 0.344,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_3",
+                        "label": "CTAS 3 \u2014 Urgent",
+                        "wait_minutes": 38,
+                        "wait_min_minutes": 28,
+                        "wait_max_minutes": 69,
+                        "target_minutes": 30,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ctas_4",
+                        "label": "CTAS 4 \u2014 Less Urgent",
+                        "wait_minutes": 76,
+                        "wait_min_minutes": 57,
+                        "wait_max_minutes": 138,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.313,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "standard_er",
+                        "label": "Standard ER",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 65,
+                        "wait_max_minutes": 101,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.432,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    },
+                    {
+                        "scenario_code": "ctas_5",
+                        "label": "CTAS 5 \u2014 Non-Urgent",
+                        "wait_minutes": 151,
+                        "wait_min_minutes": 113,
+                        "wait_max_minutes": 276,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.316,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "low_acuity_non_urgent",
+                        "label": "Low-acuity / non-urgent",
+                        "wait_minutes": 111,
+                        "wait_min_minutes": 88,
+                        "wait_max_minutes": 134,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.537,
+                        "confidence_score": 0.32,
+                        "notes": "ERly care-setting baseline for hospital facilities, calibrated from CIHI NACRS 2022-23. https://www.cihi.ca/en/nacrs-metadata"
+                    }
+                ],
+                "source_records": [
+                    {
+                        "source_kind": "provincial_benchmark",
+                        "source_name": "Ontario Health provincial benchmark model",
+                        "status": "estimated",
+                        "confidence_score": 0.48,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 125,
+                        "wait_min_minutes": 87,
+                        "wait_max_minutes": 168,
+                        "metadata_json": "{\"evidence_tier\": \"provincial_benchmark\", \"match_strategy\": \"benchmark_model\", \"benchmark_url\": \"https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\", \"ctas_guidelines_url\": \"https://caep.ca/resources/ctas/\", \"formula_explanation\": \"est_wait = ontario_median_physician_wait \\u00d7 size_factor \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"ontario_median_physician_wait_minutes\": {\"value\": 99, \"source_citation\": \"Health Quality Ontario, Time spent in emergency departments 2022-23. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"size_factor\": {\"value\": 1.15, \"source_citation\": \"Derived from HQO volume-weighted ED data for 'hospital' facility type. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}}, \"ontario_median_minutes\": 99, \"range_low\": 87, \"range_high\": 168, \"capacity_score\": 0.575, \"queue_length\": 31, \"occupancy_probability\": 0.598, \"diversion_probability\": 0.0}"
+                    },
+                    {
+                        "source_kind": "care_setting_proxy",
+                        "source_name": "ERly care-setting proxy (CIHI-calibrated baseline)",
+                        "status": "estimated",
+                        "confidence_score": 0.32,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": 83,
+                        "wait_min_minutes": 58,
+                        "wait_max_minutes": 108,
+                        "metadata_json": "{\"evidence_tier\": \"care_setting_proxy\", \"match_strategy\": \"facility_type_baseline\", \"source_url\": \"https://www.cihi.ca/en/nacrs-metadata\", \"formula_explanation\": \"est_wait = facility_type_baseline_wait \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"facility_type_baseline_wait_minutes\": {\"value\": 76, \"source_citation\": \"ERly baseline for hospital: 76 min. Derived from CIHI NACRS 2022-23 median visit durations. https://www.cihi.ca/en/nacrs-metadata\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"care_setting_proxy_factor\": {\"value\": 1.0, \"source_citation\": \"ERly CARE_SETTING_PROXY_FACTORS['hospital'] = 1.0. Derived from CIHI NACRS weighted facility-type median visit durations.\"}}, \"capacity_score\": 0.854, \"queue_length\": 31, \"occupancy_probability\": 0.769, \"diversion_probability\": 0.005, \"open_now\": true, \"provider_note\": \"Evidence floor \\u2014 deterministic estimate from CIHI-calibrated facility-type baselines. Confidence intentionally low (0.32). Always prefer official or aggregator sources.\"}"
+                    }
+                ],
+                "care_location": {
+                    "id": 42,
+                    "name": "Guelph General Hospital",
+                    "type": "hospital",
+                    "city": "Guelph",
+                    "latitude": 43.5442,
+                    "longitude": -80.2489
+                }
+            }
+        },
+        {
+            "facility_id": 43,
+            "name": "Freeport Health Campus (Grand River)",
+            "type": "hospital",
+            "address": "3570 King St E",
+            "latitude": 43.4212,
+            "longitude": -80.3821,
+            "distance_km": 14.86,
+            "travel_time_minutes": 25.3,
+            "wait_time_minutes": null,
+            "wait_time_range": [
+                null,
+                null
+            ],
+            "total_time_minutes": null,
+            "recommendation_score": 0.0,
+            "confidence_score": 0.416,
+            "confidence_label": "low",
+            "source_kind": "provincial_benchmark",
+            "status": "closed",
+            "snapshot": {
+                "id": 158,
+                "care_location_id": 43,
+                "source_kind": "provincial_benchmark",
+                "source_name": "ERly fused wait-time engine",
+                "status": "closed",
+                "confidence_score": 0.416,
+                "confidence_label": "low",
+                "overall_wait_minutes": null,
+                "overall_wait_min_minutes": null,
+                "overall_wait_max_minutes": null,
+                "capacity_score": 0.687,
+                "queue_length": 19,
+                "occupancy_probability": 0.666,
+                "diversion_probability": 0.0,
+                "last_reported_at": "2026-03-08T02:26:00",
+                "created_at": "2026-03-08T02:26:29.135077",
+                "scenarios": [
+                    {
+                        "scenario_code": "ctas_1",
+                        "label": "CTAS 1 \u2014 Resuscitation",
+                        "wait_minutes": 0,
+                        "wait_min_minutes": 0,
+                        "wait_max_minutes": 1,
+                        "target_minutes": 0,
+                        "probability_within_target": 0.496,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "immediate_emergency",
+                        "label": "Immediate emergency",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "target_minutes": 10,
+                        "probability_within_target": 0.0,
+                        "confidence_score": 0.32,
+                        "notes": "Facility currently closed based on configured hours."
+                    },
+                    {
+                        "scenario_code": "ctas_2",
+                        "label": "CTAS 2 \u2014 Emergent",
+                        "wait_minutes": 19,
+                        "wait_min_minutes": 14,
+                        "wait_max_minutes": 34,
+                        "target_minutes": 15,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ambulance_offload",
+                        "label": "Ambulance offload",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "target_minutes": 25,
+                        "probability_within_target": 0.0,
+                        "confidence_score": 0.32,
+                        "notes": "Facility currently closed based on configured hours."
+                    },
+                    {
+                        "scenario_code": "ctas_3",
+                        "label": "CTAS 3 \u2014 Urgent",
+                        "wait_minutes": 38,
+                        "wait_min_minutes": 28,
+                        "wait_max_minutes": 69,
+                        "target_minutes": 30,
+                        "probability_within_target": 0.318,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "ctas_4",
+                        "label": "CTAS 4 \u2014 Less Urgent",
+                        "wait_minutes": 76,
+                        "wait_min_minutes": 57,
+                        "wait_max_minutes": 138,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.313,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "standard_er",
+                        "label": "Standard ER",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "target_minutes": 60,
+                        "probability_within_target": 0.0,
+                        "confidence_score": 0.32,
+                        "notes": "Facility currently closed based on configured hours."
+                    },
+                    {
+                        "scenario_code": "ctas_5",
+                        "label": "CTAS 5 \u2014 Non-Urgent",
+                        "wait_minutes": 151,
+                        "wait_min_minutes": 113,
+                        "wait_max_minutes": 276,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.316,
+                        "confidence_score": 0.48,
+                        "notes": "CTAS 2020 Implementation Guidelines, CAEP/NENA/AMUQ/NCA. https://caep.ca/resources/ctas/"
+                    },
+                    {
+                        "scenario_code": "low_acuity_non_urgent",
+                        "label": "Low-acuity / non-urgent",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "target_minutes": 120,
+                        "probability_within_target": 0.0,
+                        "confidence_score": 0.32,
+                        "notes": "Facility currently closed based on configured hours."
+                    }
+                ],
+                "source_records": [
+                    {
+                        "source_kind": "provincial_benchmark",
+                        "source_name": "Ontario Health provincial benchmark model",
+                        "status": "closed",
+                        "confidence_score": 0.48,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "metadata_json": "{\"evidence_tier\": \"provincial_benchmark\", \"match_strategy\": \"benchmark_model\", \"benchmark_url\": \"https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\", \"ctas_guidelines_url\": \"https://caep.ca/resources/ctas/\", \"formula_explanation\": \"est_wait = ontario_median_physician_wait \\u00d7 size_factor \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"ontario_median_physician_wait_minutes\": {\"value\": 99, \"source_citation\": \"Health Quality Ontario, Time spent in emergency departments 2022-23. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"size_factor\": {\"value\": 1.15, \"source_citation\": \"Derived from HQO volume-weighted ED data for 'hospital' facility type. https://www.hqontario.ca/System-Performance/Time-Spent-in-Emergency-Departments\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}}, \"ontario_median_minutes\": 99, \"range_low\": 87, \"range_high\": 168, \"capacity_score\": 0.575, \"queue_length\": 31, \"occupancy_probability\": 0.598, \"diversion_probability\": 0.0}"
+                    },
+                    {
+                        "source_kind": "care_setting_proxy",
+                        "source_name": "ERly care-setting proxy (CIHI-calibrated baseline)",
+                        "status": "closed",
+                        "confidence_score": 0.32,
+                        "freshness_minutes": 0,
+                        "reported_at": "2026-03-08T02:26:00",
+                        "wait_minutes": null,
+                        "wait_min_minutes": null,
+                        "wait_max_minutes": null,
+                        "metadata_json": "{\"evidence_tier\": \"care_setting_proxy\", \"match_strategy\": \"facility_type_baseline\", \"source_url\": \"https://www.cihi.ca/en/nacrs-metadata\", \"formula_explanation\": \"est_wait = facility_type_baseline_wait \\u00d7 daypart_multiplier \\u00d7 weekday_multiplier\", \"formula_inputs\": {\"facility_type_baseline_wait_minutes\": {\"value\": 76, \"source_citation\": \"ERly baseline for hospital: 76 min. Derived from CIHI NACRS 2022-23 median visit durations. https://www.cihi.ca/en/nacrs-metadata\"}, \"daypart_multiplier\": {\"value\": 1.14, \"source_citation\": \"CIHI NACRS hourly ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"weekday_multiplier\": {\"value\": 0.96, \"source_citation\": \"CIHI NACRS weekday ED arrival distribution 2022-23. https://www.cihi.ca/en/nacrs-metadata\"}, \"care_setting_proxy_factor\": {\"value\": 1.0, \"source_citation\": \"ERly CARE_SETTING_PROXY_FACTORS['hospital'] = 1.0. Derived from CIHI NACRS weighted facility-type median visit durations.\"}}, \"capacity_score\": 0.854, \"queue_length\": 0, \"occupancy_probability\": 0.769, \"diversion_probability\": 0.0, \"open_now\": false, \"provider_note\": \"Evidence floor \\u2014 deterministic estimate from CIHI-calibrated facility-type baselines. Confidence intentionally low (0.32). Always prefer official or aggregator sources.\"}"
+                    }
+                ],
+                "care_location": {
+                    "id": 43,
+                    "name": "Freeport Health Campus (Grand River)",
+                    "type": "hospital",
+                    "city": "Kitchener",
+                    "latitude": 43.4212,
+                    "longitude": -80.3821
+                }
+            }
+        }
+    ]
+}

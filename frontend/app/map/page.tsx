@@ -15,8 +15,10 @@ import { AuthModal } from "@/components/modals/AuthModal";
 import { QuestionnaireModal } from "@/components/modals/QuestionnaireModal";
 import { ReportPreviewModal } from "@/components/modals/ReportPreviewModal";
 import { ReportSuccessModal } from "@/components/modals/ReportSuccessModal";
+import { EvidenceModal } from "@/components/modals/EvidenceModal";
 
 import { MAP_CONFIG, URGENCY_CONFIG } from "@/lib/constants";
+import { matchesCareFilter } from "@/lib/utils";
 import type {
   CareFilter,
   CareOption,
@@ -27,6 +29,7 @@ import type {
   TriagePopupResult,
   QuestionnaireData,
   MedicalReport,
+  WaitTimeSnapshot,
 } from "@/lib/types";
 
 // ── Flow Steps ──
@@ -58,6 +61,7 @@ function MapPageInner() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<TriagePopupResult | null>(null);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
+  const [showTriagePanel, setShowTriagePanel] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<FacilityDetails | null>(null);
   const [userSeverity, setUserSeverity] = useState<number | null>(null);
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(null);
@@ -67,24 +71,26 @@ function MapPageInner() {
   const [reportPreview, setReportPreview] = useState<MedicalReport | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [allowReportSubmission, setAllowReportSubmission] = useState(false);
+  const [evidenceModalData, setEvidenceModalData] = useState<{ facilityName: string; snapshot: WaitTimeSnapshot } | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
 
   // ── Fetch real care options from backend ──────────────────────────────────
   const fetchCareOptions = useCallback(async (
     lat: number,
     lng: number,
     severity: number | null,
+    overrideTypes?: string,
   ) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-    // Map severity to facility types to fetch
-    let types: string;
-    if (severity === null || severity >= 4) {
-      types = "hospital,er";
-    } else if (severity === 3) {
-      types = "urgent_care,clinic";
-    } else {
-      types = "clinic,pharmacy";
-    }
+    // Types: respect explicit override (toolbar filter), else infer from severity
+    const types: string = overrideTypes ?? (
+      severity === null || severity >= 4
+        ? "hospital,er"
+        : severity === 3
+        ? "urgent_care,clinic"
+        : "clinic,pharmacy"
+    );
 
     const urgency =
       severity === null || severity >= 4
@@ -100,6 +106,7 @@ function MapPageInner() {
         ? "Walk-in Clinic"
         : "Pharmacy / Clinic";
 
+    setIsFetching(true);
     try {
       const resp = await fetch(
         `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`
@@ -107,7 +114,9 @@ function MapPageInner() {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data: CareOptionsResponse = await resp.json();
 
-      const facilities: TriageFacility[] = data.facilities.map((f: CareOption) => ({
+      const facilities: TriageFacility[] = data.facilities
+        .filter((f: CareOption) => f.status !== "closed")
+        .map((f: CareOption) => ({
         id: String(f.facility_id),
         name: f.name,
         type: f.type,
@@ -135,6 +144,7 @@ function MapPageInner() {
           : "Nearby care facilities ranked by total time to care (drive + wait). Sources: live feeds, public aggregators, and CIHI-calibrated benchmarks.";
 
       setTriageResult({ urgency, careType, summary, facilities });
+      setShowTriagePanel(true);
       setAllowReportSubmission(true);
 
       if (facilities.length > 0) {
@@ -156,6 +166,9 @@ function MapPageInner() {
         summary: "Could not reach the ERly backend. Make sure the API server is running.",
         facilities: [],
       });
+      setShowTriagePanel(true);
+    } finally {
+      setIsFetching(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -235,6 +248,24 @@ function MapPageInner() {
       setIsSearching(false);
     }
   }, [searchQuery, triageResult]);
+
+  // ── Toolbar filter → re-fetch backend with matching types ──
+  const handleFilterChange = useCallback((filter: CareFilter) => {
+    setActiveFilter(filter);
+    const filterTypeMap: Record<CareFilter, string> = {
+      all:         "hospital,er,urgent_care,clinic,pharmacy",
+      er:          "hospital,er",
+      urgent:      "urgent_care",
+      walkin:      "clinic",
+      telehealth:  "clinic",
+      pharmacy:    "pharmacy",
+      specialty:   "hospital",
+    };
+    const center = mapRef.current?.getCenter();
+    if (center) {
+      fetchCareOptions(center.lat, center.lng, userSeverity, filterTypeMap[filter]);
+    }
+  }, [fetchCareOptions, userSeverity]);
 
   // ── Clear existing markers ──
   const clearMarkers = useCallback(() => {
@@ -398,29 +429,33 @@ function MapPageInner() {
           },
         });
 
-        // Route casing (thin dark border for readability on all map styles)
+        // Route casing — white glow behind the main line
         map.addLayer({
           id: 'route-outline',
           type: 'line',
           source: 'route',
+          slot: 'top',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#1D4ED8',
+            'line-color': '#FFFFFF',
             'line-width': 10,
-            'line-opacity': 0.6,
+            'line-opacity': 0.3,
+            'line-emissive-strength': 1,
           },
         });
 
-        // Main navigation line — solid blue, no dashes
+        // Main navigation line — sky-400, emissive so night lighting doesn't darken it
         map.addLayer({
           id: 'route',
           type: 'line',
           source: 'route',
+          slot: 'top',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#3B82F6',
+            'line-color': '#38BDF8',
             'line-width': 6,
             'line-opacity': 1.0,
+            'line-emissive-strength': 1,
           },
         });
 
@@ -446,11 +481,13 @@ function MapPageInner() {
           id: 'route-to-pin',
           type: 'line',
           source: 'route-to-pin',
+          slot: 'top',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': '#3B82F6',
+            'line-color': '#38BDF8',
             'line-width': 6,
             'line-opacity': 1.0,
+            'line-emissive-strength': 1,
           },
         });
 
@@ -622,37 +659,26 @@ function MapPageInner() {
     };
   }, [questionnaireData, lastSymptoms, triageResult]);
 
-  // ── Add markers when triage results change ──
+  // ── Add markers when triage results change or filter changes ──
   useEffect(() => {
-    console.log('🎯 Marker effect triggered:', { 
-      hasTriageResult: !!triageResult, 
-      mapReady, 
-      facilitiesCount: triageResult?.facilities?.length,
-      mapLoaded: mapRef.current?.loaded()
-    });
-    
     if (triageResult && mapReady && mapRef.current) {
-      console.log('✅ Will add facility markers:', triageResult.facilities);
-      
+      const filteredFacilities = activeFilter === "all"
+        ? triageResult.facilities
+        : triageResult.facilities.filter(f => matchesCareFilter(f.type, activeFilter));
+
       // Wait for map to be fully loaded and idle
       const addMarkers = () => {
         if (mapRef.current && mapRef.current.loaded()) {
-          console.log('🔴 NOW adding markers to map');
-          addFacilityMarkers(triageResult.facilities);
+          addFacilityMarkers(filteredFacilities);
         } else {
-          console.log('⚠️ Map not loaded yet, waiting...');
           setTimeout(addMarkers, 100);
         }
       };
       
-      // Start attempting to add markers
       const timeoutId = setTimeout(addMarkers, 200);
-      
-      return () => {
-        clearTimeout(timeoutId);
-      };
+      return () => { clearTimeout(timeoutId); };
     }
-  }, [triageResult, mapReady, addFacilityMarkers]);
+  }, [triageResult, mapReady, activeFilter, addFacilityMarkers]);
 
   // ── Request geolocation and update blue dot + map center ──
   useEffect(() => {
@@ -758,7 +784,8 @@ function MapPageInner() {
     const shouldShowPin = mapReady && 
                          flowStep === "map" && 
                          !reportPreview && 
-                         !showSuccessModal;
+                         !showSuccessModal &&
+                         !evidenceModalData;
     
     if (shouldShowPin) {
       addCurrentLocationMarker();
@@ -769,28 +796,46 @@ function MapPageInner() {
         currentLocationMarkerRef.current = null;
       }
     }
-  }, [mapReady, flowStep, reportPreview, showSuccessModal, addCurrentLocationMarker]);
+  }, [mapReady, flowStep, reportPreview, showSuccessModal, evidenceModalData, addCurrentLocationMarker]);
 
   return (
     <div className="relative h-screen w-full">
       {/* ── Map Container ── */}
       <div ref={mapContainer} className="h-full w-full" />
 
-      {/* ── Filter Toolbar (shown after questionnaire/search) ── */}
-      {showToolbar && flowStep === "map" && (
-        <Toolbar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+      {/* ── Filter Toolbar (shown only when triage results are available) ── */}
+      {showToolbar && flowStep === "map" && !!triageResult && (
+        <Toolbar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
       )}
 
       {/* ── Map Controls ── */}
       {mapReady && <MapControls map={mapRef.current} />}
 
       {/* ── Triage Results Panel (Left) ── */}
-      {triageResult && (
-        <TriageResultsPanel
-          result={triageResult}
-          onClose={() => setTriageResult(null)}
-          onFacilitySelect={handleFacilitySelect}
-        />
+      {triageResult && showTriagePanel && (() => {
+        const displayedFacilities = activeFilter === "all"
+          ? triageResult.facilities
+          : triageResult.facilities.filter(f => matchesCareFilter(f.type, activeFilter));
+        const displayedResult = { ...triageResult, facilities: displayedFacilities };
+        return (
+          <TriageResultsPanel
+            result={displayedResult}
+            isRefetching={isFetching}
+            onClose={() => setShowTriagePanel(false)}
+            onFacilitySelect={handleFacilitySelect}
+          />
+        );
+      })()}
+
+      {/* ── Reopen FAB (when panel is hidden but results exist) ── */}
+      {triageResult && !showTriagePanel && flowStep === "map" && (
+        <button
+          onClick={() => setShowTriagePanel(true)}
+          className="absolute top-16 left-4 z-20 flex items-center gap-2.5 glass rounded-2xl px-5 py-3 text-white hover:text-white transition-all duration-200 animate-slideUp hover:scale-105 shadow-lg border border-white/[0.15]"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+          <span className="text-sm font-semibold">{triageResult.facilities.length} facilities nearby</span>
+        </button>
       )}
 
       {/* ── Facility Details Panel (Right) ── */}
@@ -803,6 +848,7 @@ function MapPageInner() {
           }}
           accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ""}
           showReportButton={allowReportSubmission}
+          onShowEvidence={(snap) => setEvidenceModalData({ facilityName: selectedFacility.name, snapshot: snap })}
           onShowRoute={() => {
             // Show report preview instead of immediate route
             const report = createReport(selectedFacility);
@@ -871,17 +917,27 @@ function MapPageInner() {
           facilityName={selectedFacility.name}
           onClose={() => {
             setShowSuccessModal(false);
-            // Show the route after success
+            setAllowReportSubmission(false);
             if (selectedFacility) {
               drawRoute(selectedFacility.coordinates);
             }
           }}
           onGoHome={() => {
             setShowSuccessModal(false);
+            setAllowReportSubmission(false);
             setSelectedFacility(null);
             setTriageResult(null);
+            setShowTriagePanel(false);
             clearRoute();
           }}
+        />
+      )}
+      {/* ── Evidence Modal (rendered at root to avoid transform clipping) ── */}
+      {evidenceModalData && (
+        <EvidenceModal
+          facilityName={evidenceModalData.facilityName}
+          snapshot={evidenceModalData.snapshot}
+          onClose={() => setEvidenceModalData(null)}
         />
       )}
     </div>
