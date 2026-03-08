@@ -1,4 +1,4 @@
-# ERly — HackCanada 2026
+# ERly : HackCanada 2026
 
 Canadian emergency healthcare routing: describe symptoms → AI triage → nearby facilities with wait times.
 

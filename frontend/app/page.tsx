@@ -3,7 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { ArrowRight, Activity, Moon, Sun } from "lucide-react";
+import {
+  ArrowRight,
+  Activity,
+  Moon,
+  Sun,
+  ChevronDown,
+  Brain,
+  Building2,
+  Clock,
+  ClipboardList,
+  BarChart3,
+  HeartPulse,
+  type LucideIcon,
+} from "lucide-react";
 import { MobileWarningModal } from "@/components/modals/MobileWarningModal";
 import { useMobileCheck } from "@/hooks/useMobileCheck";
 import { AuthButton } from "@/components/auth-button";
@@ -15,49 +28,61 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: [0, 0, 0.2, 1] as const },
 };
 
-const CORE_FEATURES = [
+const CORE_FEATURES: {
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+  shape: string;
+  color: string;
+}[] = [
   {
     title: "AI Symptom Triage",
     desc: "Instant severity assessment",
-    icon: "🧠",
+    icon: Brain,
     shape: "droplet",
     color: "bg-blue-200",
   },
   {
     title: "Smart Hospital Routing",
     desc: "Find the best ER or clinic",
-    icon: "🏥",
+    icon: Building2,
     shape: "cross",
     color: "bg-yellow-200",
   },
   {
     title: "Real-Time Wait Times",
     desc: "Know before you go",
-    icon: "⏱️",
+    icon: Clock,
     shape: "blob",
     color: "bg-green-200",
   },
   {
     title: "Digital Pre-Check-In",
     desc: "Skip paperwork at arrival",
-    icon: "📋",
+    icon: ClipboardList,
     shape: "hexagon",
     color: "bg-purple-200",
   },
   {
     title: "Clinical Summary Generation",
     desc: "Doctors get your case instantly",
-    icon: "📊",
+    icon: BarChart3,
     shape: "star",
     color: "bg-indigo-200",
   },
   {
     title: "Vitals Monitoring",
     desc: "Continuous patient safety",
-    icon: "❤️",
+    icon: HeartPulse,
     shape: "circle",
     color: "bg-yellow-100",
   },
+];
+
+const HERO_PHRASES = [
+  " guide you to care.",
+  " get you there.",
+  " close the gap.",
 ];
 
 export default function Home() {
@@ -65,6 +90,8 @@ export default function Home() {
   const isMobile = useMobileCheck();
   const [showMobileWarning, setShowMobileWarning] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [typingIndex, setTypingIndex] = useState(0);
+  const [typingText, setTypingText] = useState("");
 
   useEffect(() => {
     // Load theme preference from localStorage, default to dark mode
@@ -79,12 +106,31 @@ export default function Home() {
     router.prefetch("/map");
   }, [router]);
 
+  // Typing effect: "We" + rotating phrases
+  useEffect(() => {
+    const full = HERO_PHRASES[typingIndex];
+    if (typingText.length < full.length) {
+      const t = setTimeout(() => setTypingText(full.slice(0, typingText.length + 1)), 80);
+      return () => clearTimeout(t);
+    }
+    const pause = setTimeout(() => {
+      setTypingText("");
+      setTypingIndex((i) => (i + 1) % HERO_PHRASES.length);
+    }, 2800);
+    return () => clearTimeout(pause);
+  }, [typingIndex, typingText]);
+
   const handleMapNavigation = () => {
     if (isMobile) {
       setShowMobileWarning(true);
     } else {
       router.push("/map?welcome=true");
     }
+  };
+
+  const scrollToCoreFeatures = () => {
+    const el = document.getElementById("core-features");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const toggleTheme = () => {
@@ -111,27 +157,7 @@ export default function Home() {
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>ERly</span>
           </div>
-          <div className="flex items-center gap-6">
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Features
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Wait Times
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              About Us
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Contact
-            </button>
+          <div className="flex items-center gap-4">
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-full transition-colors ${
@@ -150,7 +176,7 @@ export default function Home() {
       {/* Section 1: Hero with Doctors */}
       <section className="relative z-10 min-h-screen flex items-center justify-center pt-20 px-6">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.50fr_1fr] gap-12 items-center">
             {/* Male Doctor Photo - Left */}
             <motion.div
               className="flex justify-center lg:justify-end"
@@ -189,39 +215,31 @@ export default function Home() {
 
             {/* Center Content */}
             <motion.div
-              className="text-center lg:col-span-1"
+              className="text-center lg:col-span-1 w-full max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm font-medium mb-6 ${
-                isDarkMode 
-                  ? 'bg-teal-500/20 border-teal-500/30 text-teal-400' 
-                  : 'bg-teal-100 border-teal-200 text-teal-700'
-              }`}>
-                <Activity className="w-4 h-4" />
-                Healthcare Navigation
-              </div>
-
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight ${
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-snug ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                <span className="block mb-2">
+                <span className="block mb-3">
                   Your health isn&apos;t a dot on a map.
                 </span>
-                <span className={`block ${
+                <span className={`block min-h-[1.2em] mb-3 ${
                   isDarkMode 
                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400' 
                     : 'text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600'
                 }`}>
-                  We guide you to care -
+                  We{typingText}
+                  <span className="animate-pulse opacity-90">|</span>
                 </span>
                 <span className="block">
-                  no guess, no gap.
+                  Right care, right now.
                 </span>
               </h1>
 
-              <p className={`text-lg max-w-md mx-auto mb-8 leading-relaxed ${
+              <p className={`text-lg max-w-xl mx-auto mb-8 leading-relaxed ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Describe your symptoms and get matched with the best care option, from emergency rooms to telehealth.
@@ -230,17 +248,17 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button
                   onClick={handleMapNavigation}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base"
+                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base whitespace-nowrap"
                 >
-                  <Activity className="w-5 h-5" />
+                  <Activity className="w-5 h-5 shrink-0" />
                   Get Started
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button
                   onClick={() => router.push("/map?erMap=true")}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base"
+                  className="group relative px-8 py-4 rounded-full overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-white font-bold text-base whitespace-nowrap"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/>
                   </svg>
                   ER Wait Map
@@ -288,10 +306,32 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
+        <motion.button
+          type="button"
+          onClick={scrollToCoreFeatures}
+          aria-label="Scroll to Core Features"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+          className={`absolute bottom-6 left-1/2 -translate-x-1/2 translate-x-0 flex items-center justify-center w-12 h-12 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent ${
+            isDarkMode
+              ? "bg-white/10 backdrop-blur-md border border-white/20 shadow-black/20 hover:bg-white/15 hover:border-teal-400/40 text-white focus:ring-teal-400"
+              : "bg-white/80 backdrop-blur-md border border-gray-200/80 shadow-gray-400/20 hover:bg-white hover:border-teal-400/50 text-gray-700 focus:ring-teal-500"
+          }`}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.96 }}
+        >
+          <motion.span
+            animate={{ y: [0, 4, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-6 h-6" strokeWidth={2.5} />
+          </motion.span>
+        </motion.button>
       </section>
 
       {/* Section 2: Core Features */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6">
+      <section id="core-features" className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6 scroll-mt-4">
         <div className="max-w-6xl mx-auto w-full">
           <motion.div className="text-center mb-12" {...fadeInUp}>
             <h2 className={`text-3xl lg:text-4xl font-bold mb-4 ${
@@ -314,12 +354,12 @@ export default function Home() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ 
-                  duration: 0.5, 
+                transition={{
+                  duration: 0.5,
                   delay: idx * 0.1,
                 }}
               >
-                <div 
+                <div
                   className={`${feature.color} shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-white relative overflow-hidden ${
                     feature.shape === 'droplet' ? 'rounded-[50%_50%_50%_0%] w-56 h-64 rotate-[-45deg]' :
                     feature.shape === 'cross' ? 'rounded-2xl w-full max-w-[300px] h-56' :
@@ -337,20 +377,20 @@ export default function Home() {
                       <div className="absolute h-full w-[35%] bg-yellow-300 rounded-lg"></div>
                     </div>
                   )}
-                  
+
                   {/* Star shape background */}
                   {feature.shape === 'star' && (
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                       <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0" style={{ transform: 'scale(1.15)' }}>
-                        <polygon 
-                          points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35" 
-                          fill="currentColor" 
+                        <polygon
+                          points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35"
+                          fill="currentColor"
                           className="text-indigo-300"
                         />
                       </svg>
                     </div>
                   )}
-                  
+
                   {/* Hexagon clip path */}
                   {feature.shape === 'hexagon' && (
                     <div className="absolute inset-0 pointer-events-none" style={{
@@ -358,7 +398,7 @@ export default function Home() {
                       background: 'linear-gradient(135deg, rgba(192, 132, 252, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)'
                     }}></div>
                   )}
-                  
+
                   <div className={`relative z-10 flex flex-col items-center h-full text-center px-6 ${
                     feature.shape === 'droplet' ? 'rotate-[45deg]' : ''
                   } ${
@@ -368,13 +408,23 @@ export default function Home() {
                     feature.shape === 'circle' ? 'justify-center py-8' :
                     'justify-center py-8'
                   }`}>
-                    <div className={`${
-                      feature.shape === 'cross' ? 'text-3xl mb-2' :
-                      feature.shape === 'blob' ? 'text-4xl mb-4' :
-                      feature.shape === 'star' ? 'text-3xl mb-3' :
-                      feature.shape === 'circle' ? 'text-3xl mb-3' :
-                      'text-3xl mb-3'
-                    }`}>{feature.icon}</div>
+                    <div className={`flex items-center justify-center text-gray-800 ${
+                      feature.shape === 'cross' ? 'mb-2' :
+                      feature.shape === 'blob' ? 'mb-4' :
+                      feature.shape === 'star' ? 'mb-3' :
+                      feature.shape === 'circle' ? 'mb-3' :
+                      'mb-3'
+                    }`}>
+                      {(() => {
+                        const Icon = feature.icon;
+                        return (
+                          <Icon
+                            className={feature.shape === 'blob' ? 'w-12 h-12' : 'w-10 h-10'}
+                            strokeWidth={2}
+                          />
+                        );
+                      })()}
+                    </div>
                     <h3 className={`font-bold text-gray-900 leading-tight mb-2 ${
                       feature.shape === 'cross' ? 'text-base' :
                       feature.shape === 'blob' ? 'text-lg' :
@@ -400,7 +450,8 @@ export default function Home() {
           </div>
 
           {/* How We Navigate Section */}
-          <motion.div className="text-center mb-12 mt-20" {...fadeInUp}>
+          <div id="how-we-navigate" className="relative scroll-mt-4">
+          <motion.div className="text-center mb-6 mt-20 pt-20" {...fadeInUp}>
             <h2 className={`text-3xl lg:text-5xl font-bold mb-4 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
@@ -541,11 +592,12 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+          </div>
         </div>
       </section>
 
       {/* Section 3: Mission Statement - Enhanced UI */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6">
+      <section id="mission" className="relative z-10 min-h-screen flex items-center justify-center pt-8 pb-20 px-6 scroll-mt-4">
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Enhanced Conversation Scene - Left */}
@@ -772,34 +824,12 @@ export default function Home() {
           : 'bg-white/80 border-gray-200'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          <div className="flex flex-col items-center gap-6 mb-8">
             <div className="flex items-center gap-2">
               <Activity className={`w-8 h-8 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
               <span className={`text-3xl font-bold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>ERly</span>
-            </div>
-            <div className="flex items-center gap-8">
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Privacy
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Terms
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Contact
-              </button>
-              <button className={`transition-colors text-sm font-medium ${
-                isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}>
-                Instagram
-              </button>
             </div>
           </div>
           <div className={`text-center text-sm ${
