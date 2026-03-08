@@ -44,50 +44,51 @@ export const TriageResultsPanel = memo(function TriageResultsPanel({
     return (
         <aside className="absolute left-4 top-[72px] z-10 w-80 max-h-[calc(100vh-172px)] flex flex-col glass rounded-2xl overflow-hidden animate-slideInLeft">
 
-            {/* ── Panel header ── */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07] shrink-0">
-                <div>
-                    <div className="text-[10px] uppercase tracking-[0.28em] font-bold text-white/60 mb-1.5">
+            {/* ── Urgency verdict stripe ── */}
+            <div className={`px-5 pt-4 pb-3 border-b shrink-0 ${urgency.bg} ${urgency.border}`}>
+                <div className="flex items-center justify-between mb-1">
+                    <div className="text-[9px] uppercase tracking-[0.35em] font-bold text-white/40">
                         ERly · Triage
                     </div>
-                    <div className="flex items-center gap-2.5">
-                        <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", dotColor)} />
-                        <span className="text-white font-bold text-[15px]">{urgency.label}</span>
-                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-1 rounded-lg hover:bg-white/[0.10] text-white/50 hover:text-white/80 transition-colors"
+                    >
+                        <X size={14} />
+                    </button>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/60 hover:text-white/70 transition-colors"
-                >
-                    <X size={14} />
-                </button>
+                <div className={`text-2xl font-black tracking-tight ${urgency.color}`}>
+                    {urgency.label.toUpperCase()}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                    <span className={cn("w-2 h-2 rounded-full shrink-0", dotColor)} />
+                    <span className="text-white/65 text-xs font-medium">{result.careType}</span>
+                </div>
             </div>
 
             {/* ── Assessment summary ── */}
-            <div className="px-5 py-3.5 border-b border-white/[0.07] shrink-0">
-                <p className="text-white/75 text-xs leading-relaxed">{result.summary}</p>
-                <div className="flex items-baseline gap-1.5 mt-2.5">
-                    <span className="text-[9px] uppercase tracking-wider text-white/60 font-bold">Recommended</span>
-                    <span className="text-xs font-semibold text-white/80">{result.careType}</span>
-                </div>
+            <div className="px-5 py-3 border-b border-white/[0.07] shrink-0">
+                <p className="text-white/65 text-xs leading-relaxed">{result.summary}</p>
             </div>
 
-            {/* ── Time Saved vs ER banner ── */}
-            {result.timeSavedMinutes && result.timeSavedMinutes > 30 && (
-                <div className="px-5 py-4 border-b border-emerald-500/25 bg-emerald-500/[0.12] shrink-0">
-                    <div className="text-[9px] uppercase tracking-[0.25em] font-bold text-emerald-400/80 mb-1.5">
-                        vs Nearest ER
+            {/* ── Time Saved vs ER — HERO BLOCK ── */}
+            {result.timeSavedMinutes && result.timeSavedMinutes > 0 && (
+                <div className="px-5 py-4 border-b border-emerald-500/25 bg-emerald-500/[0.10] shrink-0">
+                    <div className="text-[9px] uppercase tracking-[0.35em] font-bold text-emerald-400/70 mb-2">
+                        Saved vs Nearest ER
                     </div>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-emerald-300 tabular-nums leading-none animate-timeSavedReveal animate-timeSavedPulse">
+                    <div className="flex items-end gap-3">
+                        <span className="text-4xl font-black text-emerald-300 tabular-nums leading-none animate-timeSavedReveal animate-timeSavedPulse">
                             {formatMinutes(result.timeSavedMinutes)}
                         </span>
-                        <span className="text-sm font-bold text-emerald-400/70">saved</span>
-                    </div>
-                    <div className="text-[10px] text-white/60 mt-1.5">
-                        {result.nearestErTotalMinutes
-                            ? `ER: ~${formatMinutes(result.nearestErTotalMinutes)} · Your care: ~${formatMinutes((result.nearestErTotalMinutes ?? 0) - result.timeSavedMinutes)}`
-                            : `by choosing ${result.careType} instead`}
+                        <div className="mb-0.5">
+                            <div className="text-emerald-300/80 text-sm font-bold">saved</div>
+                            <div className="text-white/40 text-[10px] leading-tight">
+                                {result.nearestErTotalMinutes
+                                    ? `ER ~${formatMinutes(result.nearestErTotalMinutes)}`
+                                    : `by skipping the ER`}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

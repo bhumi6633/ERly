@@ -18,6 +18,7 @@ import { QuestionnaireModal } from "@/components/modals/QuestionnaireModal";
 import { ReportPreviewModal } from "@/components/modals/ReportPreviewModal";
 import { ReportSuccessModal } from "@/components/modals/ReportSuccessModal";
 import { EvidenceModal } from "@/components/modals/EvidenceModal";
+import { TriageReasoningOverlay } from "@/components/modals/TriageReasoningOverlay";
 
 import { getApiUrl, API_FETCH_TIMEOUT_MS } from "@/lib/api";
 import { MAP_CONFIG, URGENCY_CONFIG, TELEHEALTH_SERVICES } from "@/lib/constants";
@@ -179,6 +180,10 @@ function MapPageInner() {
   const [evidenceModalData, setEvidenceModalData] = useState<{ facilityName: string; snapshot: WaitTimeSnapshot } | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
+  // ── Triage reasoning overlay state ──
+  const [triageOverlayPhase, setTriageOverlayPhase] = useState<'hidden' | 'analyzing' | 'verdict'>('hidden');
+  const triageOverlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Navigation state ──
   type NavPhase = 'idle' | 'loading' | 'celebrating' | 'navigating';
   const [navPhase, setNavPhase] = useState<NavPhase>('idle');
@@ -192,6 +197,15 @@ function MapPageInner() {
   const [locationQuery, setLocationQuery] = useState('');
   const [geocodeResults, setGeocodeResults] = useState<{ id: string; placeName: string; center: [number, number] }[]>([]);
 
+  // Transition overlay from analyzing → verdict when results arrive, then auto-hide
+  useEffect(() => {
+    if (triageOverlayPhase === 'analyzing' && triageResult) {
+      setTriageOverlayPhase('verdict');
+      if (triageOverlayTimerRef.current) clearTimeout(triageOverlayTimerRef.current);
+      triageOverlayTimerRef.current = setTimeout(() => setTriageOverlayPhase('hidden'), 2900);
+    }
+  }, [triageResult, triageOverlayPhase]);
+
   // ── Auto-select: set to true when fresh triage results arrive ──
   const autoSelectFirstRef = useRef(false);
 
@@ -204,28 +218,24 @@ function MapPageInner() {
   ) => {
     const API_URL = getApiUrl();
 
-    let types: string;
-    if (severity === null || severity >= 4) {
-      types = "hospital,er";
-    } else if (severity === 3) {
-      types = "urgent_care,clinic";
-    } else {
-      types = "clinic,pharmacy";
-    }
+    const types = overrideTypes ??
+      (severity === null || severity >= 8 ? "hospital,er"
+        : severity >= 5 ? "urgent_care,clinic"
+        : "clinic,pharmacy");
 
-    const urgency =
-      severity === null || severity >= 4
-        ? ("emergency" as const)
-        : severity === 3
-        ? ("urgent" as const)
-        : ("low" as const);
+    const urgency: "emergency" | "urgent" | "low" =
+      overrideTypes
+        ? (overrideTypes.includes("hospital") || overrideTypes.includes(",er") || overrideTypes === "er"
+            ? "emergency"
+            : overrideTypes.includes("urgent_care") ? "urgent" : "low")
+        : (severity === null || severity >= 8
+            ? "emergency"
+            : severity >= 5 ? "urgent" : "low");
 
     const careType =
-      severity === null || severity >= 4
-        ? "Emergency Room"
-        : severity === 3
-        ? "Walk-in Clinic"
-        : "Pharmacy / Clinic";
+      urgency === "emergency" ? "Emergency Room"
+        : urgency === "urgent" ? "Urgent Care Centre"
+        : "Walk-in / Clinic";
 
     setIsFetching(true);
     try {
@@ -284,7 +294,7 @@ function MapPageInner() {
             );
             nearestErTotalMinutes = nearestEr?.total_time_minutes ?? null;
             const bestNonErTotal = facilities[0]?.totalTimeMinutes ?? null;
-            if (nearestErTotalMinutes && bestNonErTotal && nearestErTotalMinutes > bestNonErTotal + 20) {
+            if (nearestErTotalMinutes && bestNonErTotal && nearestErTotalMinutes > bestNonErTotal + 5) {
               timeSavedMinutes = Math.round(nearestErTotalMinutes - bestNonErTotal);
             }
           }
@@ -338,22 +348,23 @@ function MapPageInner() {
 
     if (data.symptoms) setLastSymptoms(data.symptoms);
 
-    if (data.severity && data.severity >= 4) setActiveFilter("er");
-    else if (data.severity && data.severity === 3) setActiveFilter("walkin");
-    else if (data.severity && data.severity <= 2) setActiveFilter("pharmacy");
+    if (data.severity != null && data.severity >= 8) setActiveFilter("er");
+    else if (data.severity != null && data.severity >= 5) setActiveFilter("walkin");
+    else if (data.severity != null && data.severity < 5) setActiveFilter("pharmacy");
 
     const center = mapRef.current?.getCenter();
     const lat = center?.lat ?? 43.47;
     const lng = center?.lng ?? -80.54;
 
+    setTriageOverlayPhase('analyzing');
     fetchCareOptions(lat, lng, data.severity);
 
     if (!data.symptoms) setLastSymptoms("General assessment based on questionnaire");
 
     // ── Backboard triage ──────────────────────────────────────────────────
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const severityMap: Record<number, string> = { 1: "mild", 2: "minor", 3: "moderate", 4: "severe", 5: "critical" };
-    const durationMap: Record<string, string> = { just_now: "just_now", few_hours: "few_hours", few_days: "few_days", week_or_more: "week_or_more" };
+    const severityMap: Record<number, string> = { 0: "none", 1: "minimal", 2: "mild", 3: "mild", 4: "moderate", 5: "moderate", 6: "significant", 7: "severe", 8: "severe", 9: "critical", 10: "critical" };
+    const durationMap: Record<string, string> = { now: "just_now", hours: "few_hours", days: "few_days", weeks: "week_or_more", just_now: "just_now", few_hours: "few_hours", few_days: "few_days", week_or_more: "week_or_more" };
 
     let patientToken = localStorage.getItem("erly_patient_token");
     if (!patientToken) {
@@ -377,7 +388,7 @@ function MapPageInner() {
           session_id: session.id,
           patient_token: patientToken,
           category: data.category ?? "other",
-          severity: severityMap[data.severity ?? 3] ?? "moderate",
+          severity: severityMap[data.severity ?? 5] ?? "moderate",
           duration: durationMap[data.duration ?? "just_now"] ?? "just_now",
           custom_text: data.symptoms ?? "",
         }),
@@ -401,7 +412,7 @@ function MapPageInner() {
       }
 
       if (triage.pattern_alert) console.warn("Pattern alert:", triage.pattern_alert);
-      console.log("✅ Backboard:", triage.priority_level, triage.care_level);
+      console.log("Backboard:", triage.priority_level, triage.care_level);
     } catch (err) {
       console.error("Backboard failed (non-blocking):", err);
     }
@@ -434,7 +445,7 @@ function MapPageInner() {
       }
       
       setSearchQuery("");
-      console.log('✅ Symptoms updated:', searchQuery.trim());
+      console.log("Symptoms updated:", searchQuery.trim());
     } catch (error) {
       console.error("Search error:", error);
     } finally {
@@ -566,6 +577,7 @@ function MapPageInner() {
         if (!map.getLayer('traffic')) {
           map.addLayer({
             id: 'traffic', type: 'line', source: 'mapbox-traffic', 'source-layer': 'traffic',
+            slot: 'top',
             paint: {
               'line-color': ['match', ['get', 'congestion'],
                 'low', '#22C55E', 'moderate', '#FBBF24', 'heavy', '#F87171', 'severe', '#DC2626', '#94a3b8',
@@ -823,7 +835,7 @@ function MapPageInner() {
       className: "ambulance-eta-popup",
     })
       .setLngLat(positions[selectedIdx])
-      .setHTML(`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:800;color:#16a34a;white-space:nowrap;">🚑 ETA: ${eta} min</div>`)
+      .setHTML(`<div style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;font-weight:800;color:#16a34a;white-space:nowrap;">ETA: ${eta} min</div>`)
       .addTo(map);
 
     // Green route: selected ambulance → user
@@ -1188,8 +1200,8 @@ function MapPageInner() {
     setSelectedFacility(null);
     setShowTriagePanel(false);
 
-    // Show celebration if meaningful time was saved, otherwise go straight to nav
-    if (triageResult?.timeSavedMinutes && triageResult.timeSavedMinutes > 15) {
+    // Show celebration if any time was saved vs the ER baseline
+    if (triageResult?.timeSavedMinutes && triageResult.timeSavedMinutes > 0) {
       setNavPhase('celebrating');
     } else {
       setNavPhase('navigating');
@@ -1405,7 +1417,7 @@ function MapPageInner() {
       },
       recommendation: {
         careType: triageResult?.careType || "General Care",
-        summary: backboardData?.report?.clinical_picture ? `${backboardData.report.chief_complaint} — ${backboardData.report.clinical_picture} — ${backboardData.report.recommended_action}` : triageResult?.summary || "Please visit the facility for evaluation",
+        summary: backboardData?.report?.clinical_picture ? `${backboardData.report.chief_complaint}: ${backboardData.report.clinical_picture}. ${backboardData.report.recommended_action}` : triageResult?.summary || "Please visit the facility for evaluation",
       },
       selectedFacility: {
         id: facility.id,
@@ -1664,8 +1676,15 @@ function MapPageInner() {
         </div>
       )}
 
+      {/* ── Triage reasoning overlay ── */}
+      <TriageReasoningOverlay
+        phase={triageOverlayPhase}
+        questionnaireData={questionnaireData}
+        triageResult={triageResult}
+      />
+
       {/* ── Triage Results Panel (Left) ── */}
-      {triageResult && showTriagePanel && navPhase === 'idle' && (() => {
+      {triageResult && showTriagePanel && navPhase === 'idle' && triageOverlayPhase === 'hidden' && (() => {
         const displayedFacilities = activeFilter === "all"
           ? triageResult.facilities
           : triageResult.facilities.filter(f => matchesCareFilter(f.type, activeFilter));

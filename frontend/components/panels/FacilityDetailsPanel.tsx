@@ -188,27 +188,25 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                     </span>
                     <span className="flex items-center gap-1">
                         {evidenceLoading ? (
-                            <span className="text-[10px] text-white/65 font-mono animate-pulse">loading…</span>
+                            <span className="text-[10px] text-white/65 font-mono animate-pulse">loading...</span>
                         ) : evidenceSnapshot ? (
                             (() => {
-                                const score = Math.round(evidenceSnapshot.confidence_score * 100);
-                                // Interpolate red→green based on score 0-100
-                                const hue = Math.round(score * 1.2); // 0=red(0°) 100=green(120°)
-                                const scoreColor = `hsl(${hue}, 80%, 58%)`;
+                                const sourceKind = evidenceSnapshot.source_kind ?? "estimation";
+                                const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
+                                    official_hospital_feed: { label: "Live Feed",       color: "#4ade80" },
+                                    provider_api:           { label: "Live",            color: "#4ade80" },
+                                    public_aggregator:      { label: "Aggregated",      color: "#22d3ee" },
+                                    ems_signal:             { label: "EMS Signal",      color: "#fbbf24" },
+                                    provincial_benchmark:   { label: "Provincial Est.", color: "#fb923c" },
+                                    ontario_monthly_benchmark: { label: "Monthly Est.", color: "#fb923c" },
+                                    care_setting_proxy:     { label: "Estimated",       color: "#94a3b8" },
+                                    estimation:             { label: "Estimated",       color: "#94a3b8" },
+                                    insufficient_evidence:  { label: "No data",         color: "#64748b" },
+                                };
+                                const { label, color } = SOURCE_LABELS[sourceKind] ?? { label: "Estimated", color: "#94a3b8" };
                                 return (
-                                    <span className="flex items-center gap-1.5">
-                                        <span
-                                            className="text-[11px] font-bold font-mono tabular-nums"
-                                            style={{ color: scoreColor }}
-                                        >
-                                            {score}%
-                                        </span>
-                                        <span className="w-12 h-1.5 rounded-full overflow-hidden bg-white/10">
-                                            <span
-                                                className="h-full block rounded-full"
-                                                style={{ width: `${score}%`, background: `hsl(${hue}, 80%, 52%)` }}
-                                            />
-                                        </span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color }}>
+                                        {label}
                                     </span>
                                 );
                             })()

@@ -68,7 +68,7 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
                         onClick={onContinueAsGuest}
                         className="flex items-center gap-1.5 text-white/35 hover:text-white/65 text-xs transition-colors"
                     >
-                        Skip — just show me the map
+                        Skip, just show me the map
                         <ArrowRight size={11} />
                     </button>
                 </div>

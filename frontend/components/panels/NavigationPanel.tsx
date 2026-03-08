@@ -65,16 +65,6 @@ export const NavigationPanel = memo(function NavigationPanel({
         return () => clearInterval(id);
     }, [steps.length]);
 
-    // ── Simulated live speed (km/h) ───────────────────────────────────────────
-    const baseSpeed = Math.max(10, Math.round((distanceKm / Math.max(1, etaMinutes)) * 60));
-    const [speed, setSpeed] = useState(baseSpeed);
-    useEffect(() => {
-        const id = setInterval(() => {
-            setSpeed(Math.max(5, baseSpeed + Math.round((Math.random() - 0.5) * 12)));
-        }, 3_000);
-        return () => clearInterval(id);
-    }, [baseSpeed]);
-
     const currentStep: NavigationStep | undefined = steps[stepIndex];
     const nextStep: NavigationStep | undefined    = steps[stepIndex + 1];
     const stepsLeft = steps.length - stepIndex - 1;
@@ -112,12 +102,6 @@ export const NavigationPanel = memo(function NavigationPanel({
                         <div className="text-white/80 text-sm mt-1 leading-tight line-clamp-2">
                             {currentStep?.instruction ?? `Head to ${facilityName}`}
                         </div>
-                    </div>
-
-                    {/* Speed chip (right side of card) */}
-                    <div className="flex flex-col items-center justify-center px-4 bg-black/15 min-w-[54px]">
-                        <span className="text-white font-bold text-xl tabular-nums leading-none">{speed}</span>
-                        <span className="text-white/50 text-[9px] uppercase tracking-widest mt-0.5">km/h</span>
                     </div>
                 </div>
 

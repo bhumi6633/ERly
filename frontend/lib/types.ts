@@ -158,6 +158,8 @@ export interface TriagePopupResult {
 export interface QuestionnaireData {
     category: string | null;
     otherCategory?: string;
+    bodyArea?: string | null;
+    associatedSymptoms?: string[];
     severity: number | null;
     duration: string | null;
     symptoms?: string;
