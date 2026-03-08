@@ -49,7 +49,7 @@ export const TriageResultsPanel = memo(function TriageResultsPanel({
                 </div>
                 <div className="mt-3 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
                     <p className="text-blue-300 text-xs leading-relaxed">
-                        <strong>Note:</strong> Facilities ranked by Care Access Time = optimal waiting time + proximity from your location
+                        <strong>Ranked by total time to care</strong> — drive time + estimated wait. Sources: live hospital feeds, public aggregators, and CIHI-calibrated benchmarks.
                     </p>
                 </div>
             </div>
@@ -70,16 +70,32 @@ export const TriageResultsPanel = memo(function TriageResultsPanel({
                                 <span className="text-white text-sm font-medium truncate">
                                     {facility.name}
                                 </span>
-                                {facility.waitTime && (
+                                {facility.totalTimeMinutes != null ? (
+                                    <span className="text-xs text-emerald-400/90 font-semibold shrink-0 ml-2">
+                                        {Math.round(facility.totalTimeMinutes)}m
+                                    </span>
+                                ) : facility.waitTime ? (
                                     <span className="text-xs text-emerald-400/80 font-medium shrink-0 ml-2">
                                         {facility.waitTime}
                                     </span>
-                                )}
+                                ) : null}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-white/35 text-xs">{facility.type}</span>
-                                <span className="text-white/15">·</span>
-                                <span className="text-white/35 text-xs">{facility.distance}</span>
+                                <span className="text-white/35 text-xs capitalize">{facility.type}</span>
+                                {facility.distance && (
+                                    <>
+                                        <span className="text-white/15">·</span>
+                                        <span className="text-white/35 text-xs">{facility.distance}</span>
+                                    </>
+                                )}
+                                {facility.totalTimeMinutes != null && facility.travelTimeMinutes != null && (
+                                    <>
+                                        <span className="text-white/15">·</span>
+                                        <span className="text-white/30 text-[10px] font-mono">
+                                            {facility.travelTimeMinutes}m + {Math.round(facility.totalTimeMinutes - facility.travelTimeMinutes)}m wait
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </button>
                     ))}

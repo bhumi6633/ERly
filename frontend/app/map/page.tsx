@@ -19,6 +19,8 @@ import { ReportSuccessModal } from "@/components/modals/ReportSuccessModal";
 import { MAP_CONFIG, URGENCY_CONFIG } from "@/lib/constants";
 import type {
   CareFilter,
+  CareOption,
+  CareOptionsResponse,
   TriageResult,
   TriageFacility,
   FacilityDetails,
@@ -66,189 +68,96 @@ function MapPageInner() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [allowReportSubmission, setAllowReportSubmission] = useState(false);
 
-  // ── Generate facilities based on severity ──
-  const generateFacilitiesBySeverity = useCallback((center: { lng: number; lat: number }, severity: number | null) => {
-    // Helper function to generate safe land-based coordinates
-    // Mix of close, medium, and moderately far - avoiding water
-    const generateEvenlySpacedCoords = (count: number, baseDistance: number): [number, number][] => {
-      // Land-safe offsets: prioritize west and north directions (away from rivers)
-      const streetOffsets: [number, number][] = [
-        // Close facilities (2-4 blocks)
-        [0, baseDistance * 0.6],              // Close North
-        [-baseDistance * 0.5, baseDistance * 0.4],  // Close NW
-        [-baseDistance * 0.6, 0],             // Close West
-        [-baseDistance * 0.4, -baseDistance * 0.5], // Close SW
-        
-        // Medium distance (5-8 blocks)
-        [0, baseDistance * 1.2],              // Medium North
-        [-baseDistance * 1, baseDistance * 0.7],    // Medium NW
-        [-baseDistance * 1.1, 0],             // Medium West
-        [-baseDistance * 0.7, -baseDistance * 1],   // Medium SW
-        
-        // Moderately far (9-12 blocks)
-        [0, baseDistance * 1.8],              // Far North
-        [-baseDistance * 1.5, baseDistance * 1],    // Far NW
-      ];
-      
-      return streetOffsets.slice(0, count).map(([lngOffset, latOffset]) => {
-        // Small jitter for natural placement
-        const jitter = baseDistance * 0.08;
-        const jitterLng = (Math.random() - 0.5) * jitter;
-        const jitterLat = (Math.random() - 0.5) * jitter;
-        
-        return [
-          center.lng + lngOffset + jitterLng,
-          center.lat + latOffset + jitterLat
-        ];
-      });
-    };
+  // ── Fetch real care options from backend ──────────────────────────────────
+  const fetchCareOptions = useCallback(async (
+    lat: number,
+    lng: number,
+    severity: number | null,
+  ) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-    // Calculate Care Access Time (lower is better)
-    const calculateCareAccessTime = (distance: number, waitTime: number): number => {
-      // Normalize: distance in miles * 2 (mins per mile) + wait time
-      return (distance * 2) + waitTime;
-    };
-
-    // Severity 1-2: 10 Pharmacies (Low Priority)
-    if (severity && severity <= 2) {
-      const pharmacyNames = [
-        "CVS Pharmacy", "Walgreens", "Rite Aid Pharmacy", "Duane Reade",
-        "Walgreens Pharmacy", "CVS Health", "Rite Aid", "Pharmacy Plus",
-        "HealthMart Pharmacy", "Community Pharmacy"
-      ];
-      const coords = generateEvenlySpacedCoords(10, 0.012);
-      
-      const facilities = coords.map((coord, idx) => {
-        const distance = 0.3 + (idx * 0.2);
-        const waitTime = 5 + Math.floor(Math.random() * 10);
-        return {
-          id: String(idx + 1),
-          name: pharmacyNames[idx],
-          type: "Pharmacy",
-          distance: `${distance.toFixed(1)} mi`,
-          waitTime: `~${waitTime} min`,
-          address: `${100 + idx * 10} Main St`,
-          coordinates: coord,
-          careAccessTime: calculateCareAccessTime(distance, waitTime),
-        };
-      });
-
-      // Sort by Care Access Time
-      facilities.sort((a, b) => a.careAccessTime - b.careAccessTime);
-
-      return {
-        urgency: "low" as const,
-        careType: "Pharmacy",
-        summary: "Based on your assessment, we recommend visiting a pharmacy. Your condition appears mild and can likely be managed with over-the-counter medication.",
-        facilities,
-      };
+    // Map severity to facility types to fetch
+    let types: string;
+    if (severity === null || severity >= 4) {
+      types = "hospital,er";
+    } else if (severity === 3) {
+      types = "urgent_care,clinic";
+    } else {
+      types = "clinic,pharmacy";
     }
-    
-    // Severity 3: 6 Walk-in Clinics + 4 Dialysis Centers (Medium Priority)
-    if (severity === 3) {
-      const clinicNames = [
-        "QuickCare Walk-in Clinic", "CityMD Walk-in Clinic", "MedExpress Urgent Care",
-        "FastMed Walk-in Clinic", "CareNow Walk-in Clinic", "Concentra Urgent Care"
-      ];
-      const dialysisNames = [
-        "Dialysis Center NYC", "Fresenius Kidney Care", "DaVita Dialysis Center", "Renal Care Center"
-      ];
-      
-      const coords = generateEvenlySpacedCoords(10, 0.015);
-      const facilities = [];
 
-      // Add 6 walk-in clinics
-      for (let i = 0; i < 6; i++) {
-        const distance = 0.4 + (i * 0.25);
-        const waitTime = 15 + Math.floor(Math.random() * 25);
-        facilities.push({
-          id: String(i + 1),
-          name: clinicNames[i],
-          type: "Walk-in Clinic",
-          distance: `${distance.toFixed(1)} mi`,
-          waitTime: `~${waitTime} min`,
-          address: `${200 + i * 10} Oak Ave`,
-          coordinates: coords[i],
-          careAccessTime: calculateCareAccessTime(distance, waitTime),
+    const urgency =
+      severity === null || severity >= 4
+        ? ("emergency" as const)
+        : severity === 3
+        ? ("urgent" as const)
+        : ("low" as const);
+
+    const careType =
+      severity === null || severity >= 4
+        ? "Emergency Room"
+        : severity === 3
+        ? "Walk-in Clinic"
+        : "Pharmacy / Clinic";
+
+    try {
+      const resp = await fetch(
+        `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=20&types=${types}`
+      );
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data: CareOptionsResponse = await resp.json();
+
+      const facilities: TriageFacility[] = data.facilities.map((f: CareOption) => ({
+        id: String(f.facility_id),
+        name: f.name,
+        type: f.type,
+        address: f.address,
+        coordinates: [f.longitude, f.latitude] as [number, number],
+        distance:
+          f.distance_km < 1
+            ? `${Math.round(f.distance_km * 1000)} m`
+            : `${f.distance_km.toFixed(1)} km`,
+        waitTime:
+          f.wait_time_minutes != null
+            ? `${f.wait_time_minutes}m wait`
+            : f.status === "closed"
+            ? "Closed"
+            : "~",
+        careAccessTime: f.total_time_minutes ?? 9999,
+        locationId: f.facility_id,
+        travelTimeMinutes: f.travel_time_minutes,
+        totalTimeMinutes: f.total_time_minutes ?? undefined,
+      }));
+
+      const summary =
+        urgency === "emergency"
+          ? "Nearby emergency facilities ranked by total time to care (drive + wait). Sources: live hospital feeds and CIHI-calibrated provincial benchmarks."
+          : "Nearby care facilities ranked by total time to care (drive + wait). Sources: live feeds, public aggregators, and CIHI-calibrated benchmarks.";
+
+      setTriageResult({ urgency, careType, summary, facilities });
+      setAllowReportSubmission(true);
+
+      if (facilities.length > 0) {
+        setSearchResult({
+          urgency,
+          careType,
+          answer: summary,
+          coordinates: [lng, lat],
+          should_fly_to: false,
+          zoom_level: null,
         });
       }
-
-      // Add 4 dialysis centers
-      for (let i = 0; i < 4; i++) {
-        const distance = 0.6 + (i * 0.3);
-        const waitTime = 10 + Math.floor(Math.random() * 15);
-        facilities.push({
-          id: String(i + 7),
-          name: dialysisNames[i],
-          type: "Dialysis Center",
-          distance: `${distance.toFixed(1)} mi`,
-          waitTime: `~${waitTime} min`,
-          address: `${300 + i * 10} Elm Blvd`,
-          coordinates: coords[i + 6],
-          careAccessTime: calculateCareAccessTime(distance, waitTime),
-        });
-      }
-
-      facilities.sort((a, b) => a.careAccessTime - b.careAccessTime);
-
-      return {
-        urgency: "medium" as const,
-        careType: "Walk-in Clinic",
-        summary: "Based on your assessment, we recommend visiting a walk-in clinic. Your condition requires medical attention but is not an emergency.",
-        facilities,
-      };
-    }
-    
-    // Severity 4-5: 10 Emergency Rooms (High Priority)
-    if (severity && severity >= 4) {
-      // Use real Toronto hospital names that match the seeded backend DB
-      // so the "View Evidence" panel can fetch live wait data for each
-      const erNames = [
-        "Toronto General Hospital",
-        "St. Michael's Hospital ER",
-        "Sunnybrook Health Sciences Centre",
-        "Mount Sinai Hospital",
-        "SickKids Hospital",
-        "Credit Valley Hospital",
-        "Toronto Western Hospital",
-        "Humber River Hospital",
-        "North York General Hospital",
-        "Michael Garron Hospital",
-      ];
-      const coords = generateEvenlySpacedCoords(10, 0.018);
-      
-      const facilities = coords.map((coord, idx) => {
-        const distance = 0.5 + (idx * 0.3);
-        const waitTime = 35 + Math.floor(Math.random() * 40);
-        return {
-          id: String(idx + 1),
-          name: erNames[idx],
-          type: "Emergency Room",
-          distance: `${distance.toFixed(1)} mi`,
-          waitTime: `~${waitTime} min`,
-          address: `${400 + idx * 10} Medical Plaza`,
-          coordinates: coord,
-          careAccessTime: calculateCareAccessTime(distance, waitTime),
-        };
+    } catch (err) {
+      console.error("care-options fetch failed:", err);
+      // Graceful fallback: show empty result with error message
+      setTriageResult({
+        urgency: "medium",
+        careType: careType ?? "Care",
+        summary: "Could not reach the ERly backend. Make sure the API server is running.",
+        facilities: [],
       });
-
-      facilities.sort((a, b) => a.careAccessTime - b.careAccessTime);
-
-      return {
-        urgency: "high" as const,
-        careType: "Emergency Room",
-        summary: "Based on your assessment, we strongly recommend visiting an emergency room immediately. Your condition requires urgent medical attention.",
-        facilities,
-      };
     }
-    
-    // Default fallback
-    return {
-      urgency: "medium" as const,
-      careType: "Walk-in Clinic",
-      summary: "Based on your assessment, we recommend visiting a walk-in clinic for evaluation.",
-      facilities: [],
-    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Flow handlers ──
@@ -277,26 +186,16 @@ function MapPageInner() {
       setActiveFilter("pharmacy");
     }
 
-    // Auto-generate facilities immediately after questionnaire
-    if (mapRef.current) {
-      const center = mapRef.current.getCenter();
-      const mockResult = generateFacilitiesBySeverity(center, data.severity);
-      
-      setTriageResult(mockResult);
-      setSearchResult({
-        urgency: mockResult.urgency,
-        careType: mockResult.careType,
-        answer: mockResult.summary,
-        coordinates: [center.lng, center.lat],
-        should_fly_to: false,
-        zoom_level: null,
-      });
-      
-      if (!data.symptoms) {
-        setLastSymptoms("General assessment based on questionnaire");
-      }
+    // Fetch real care options from backend
+    const center = mapRef.current?.getCenter();
+    const lat = center?.lat ?? 43.47;
+    const lng = center?.lng ?? -80.54;
+    fetchCareOptions(lat, lng, data.severity);
+
+    if (!data.symptoms) {
+      setLastSymptoms("General assessment based on questionnaire");
     }
-  }, [generateFacilitiesBySeverity]);
+  }, [fetchCareOptions]);
 
   const handleQuestionnaireSkip = useCallback(() => {
     setFlowStep("map");
@@ -601,6 +500,9 @@ function MapPageInner() {
       distance: facility.distance,
       phone: "(555) 123-4567",
       hours: "Open 24/7",
+      locationId: facility.locationId,
+      travelTimeMinutes: facility.travelTimeMinutes,
+      totalTimeMinutes: facility.totalTimeMinutes,
     };
     
     setSelectedFacility(facilityDetails);
@@ -772,36 +674,18 @@ function MapPageInner() {
     erMapLoadedRef.current = true;
     
     const center = mapRef.current.getCenter();
-    const erResult = generateFacilitiesBySeverity(center, 5); // Severity 5 = Emergency
-    
-    console.log('📍 Generated ER facilities:', erResult.facilities);
-    
-    // Set all state at once
+
+    // Set state first
     setUserSeverity(5);
     setActiveFilter("er");
     setShowToolbar(true);
     setLastSymptoms("Emergency room search - direct access");
-    
-    setSearchResult({
-      urgency: erResult.urgency,
-      careType: erResult.careType,
-      answer: erResult.summary,
-      coordinates: [center.lng, center.lat],
-      should_fly_to: false,
-      zoom_level: null,
-    });
-    
-    // Set triageResult to show panel
-    setTriageResult(erResult);
-    
-    // Add markers directly after a short delay
-    setTimeout(() => {
-      console.log('🔴 Adding ER markers directly in auto-load effect');
-      addFacilityMarkers(erResult.facilities);
-    }, 500);
-    
-    console.log('✅ ER auto-load complete');
-  }, [isERMap, mapReady, generateFacilitiesBySeverity, addFacilityMarkers]);
+
+    // Fetch real care options from backend (hospitals + ERs near map center)
+    fetchCareOptions(center.lat, center.lng, 5);
+
+    console.log('✅ ER auto-load triggered');
+  }, [isERMap, mapReady, fetchCareOptions, addFacilityMarkers]);
 
   // ── Map initialization ──
   useEffect(() => {

@@ -6,7 +6,7 @@ import React from "react";
 // ── Map Configuration ──
 
 export const MAP_CONFIG = {
-    center: [-73.985, 40.748] as [number, number],
+    center: [-80.536, 43.490] as [number, number],  // Waterloo, ON — SPUR Campus area
     zoom: 13,
     pitch: 45,
     bearing: -15,

@@ -27,6 +27,7 @@ const EVIDENCE_TIER_LABELS: Record<string, string> = {
     official_browser_dashboard: "OFFICIAL DASHBOARD",
     public_aggregator_page:     "PUBLIC AGGREGATOR",
     provincial_benchmark:       "BENCHMARK MODEL",
+    care_setting_proxy:         "PROXY FLOOR",
     transparent_heuristic:      "HEURISTIC MODEL",
     insufficient_evidence:      "NO DATA SOURCE",
 };
@@ -323,7 +324,33 @@ export const FacilityDetailsPanel = memo(function FacilityDetailsPanel({
                             </div>
                         </div>
                     )}
+                    {facility.travelTimeMinutes != null && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <Navigation size={14} className="text-sky-400 shrink-0" />
+                            <div>
+                                <div className="text-[10px] text-white/35 uppercase tracking-wider">Drive</div>
+                                <div className="text-white text-sm font-medium">{facility.travelTimeMinutes}m</div>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
+                {/* Total time to care — headline stat */}
+                {facility.totalTimeMinutes != null && (
+                    <div className="mt-3 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20">
+                        <div className="text-[10px] text-emerald-300/60 uppercase tracking-wider font-medium mb-0.5">
+                            Total time to care
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-emerald-300 text-2xl font-bold">{Math.round(facility.totalTimeMinutes)}m</span>
+                            <span className="text-white/40 text-xs font-mono">
+                                {facility.travelTimeMinutes != null
+                                    ? `${facility.travelTimeMinutes}m drive + ${Math.round(facility.totalTimeMinutes - facility.travelTimeMinutes)}m wait`
+                                    : "travel + wait"}
+                            </span>
+                        </div>
+                    </div>
+                )}
 
                 {/* View Evidence Button */}
                 <button

@@ -31,6 +31,10 @@ export interface TriageFacility {
     address: string;
     coordinates: [number, number];
     careAccessTime?: number;
+    /** Backend DB location ID — present when facility comes from /care-options */
+    locationId?: number;
+    travelTimeMinutes?: number;
+    totalTimeMinutes?: number;
 }
 
 /** Detailed info for a selected facility */
@@ -47,6 +51,8 @@ export interface FacilityDetails {
     rating?: number;
     /** Backend DB location ID — present when the facility is a known seeded location */
     locationId?: number;
+    travelTimeMinutes?: number;
+    totalTimeMinutes?: number;
 }
 
 // ── Wait Time Evidence Types ──────────────────────────────────────────────────
@@ -150,4 +156,34 @@ export interface MedicalReport {
         type: string;
         address: string;
     };
+}
+
+// ── /care-options API response types ─────────────────────────────────────────
+
+/** Single facility returned by GET /care-options */
+export interface CareOption {
+    facility_id: number;
+    name: string;
+    type: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    distance_km: number;
+    travel_time_minutes: number;
+    wait_time_minutes: number | null;
+    wait_time_range: [number | null, number | null];
+    total_time_minutes: number | null;
+    recommendation_score: number;
+    confidence_score: number;
+    confidence_label: string;
+    source_kind: string;
+    status: string;
+    snapshot: WaitTimeSnapshot | null;
+}
+
+export interface CareOptionsResponse {
+    generated_at: string;
+    user_location: { lat: number; lng: number };
+    count: number;
+    facilities: CareOption[];
 }
