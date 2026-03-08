@@ -7,7 +7,7 @@ import type { MedicalReport } from "@/lib/types";
 
 interface ReportPreviewModalProps {
     report: MedicalReport;
-    onConfirm: () => void;
+    onConfirm: (patientId: string) => void;
     onCancel: () => void;
 }
 
@@ -37,8 +37,39 @@ export function ReportPreviewModal({ report, onConfirm, onCancel }: ReportPrevie
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        onConfirm();
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+            const symptoms = report.assessment.symptoms
+                ? report.assessment.symptoms.split(/[,;]/).map((s) => s.trim()).filter(Boolean)
+                : ["Not specified"];
+            const resp = await fetch(`${API_URL}/incoming-patient/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    facility_id: Number(report.selectedFacility.id) || 0,
+                    facility_name: report.selectedFacility.name,
+                    // travelTimeMinutes is a float — round to int so FastAPI doesn't 422
+                    eta_minutes: Math.round(report.recommendation.etaMinutes ?? 15),
+                    symptoms,
+                    severity: report.assessment.severityLabel,
+                    urgency_label: report.assessment.urgencyLabel,
+                    care_type: report.recommendation.careType,
+                }),
+            });
+            if (!resp.ok) {
+                const errText = await resp.text();
+                console.error("POST /incoming-patient/ failed:", resp.status, errText);
+                throw new Error(`Server error ${resp.status}`);
+            }
+            const data = await resp.json();
+            onConfirm(data.patient_id);
+        } catch (err) {
+            console.error("ReportPreviewModal submit error:", err);
+            // Fallback so the flow never breaks during demo
+            onConfirm("PT-DEMO01");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

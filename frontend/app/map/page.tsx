@@ -179,6 +179,7 @@ function MapPageInner() {
   // ── Report state ──
   const [reportPreview, setReportPreview] = useState<MedicalReport | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedPatientId, setSubmittedPatientId] = useState<string>("PT-000000");
   const [allowReportSubmission, setAllowReportSubmission] = useState(false);
   const [evidenceModalData, setEvidenceModalData] = useState<{ facilityName: string; snapshot: WaitTimeSnapshot } | null>(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -287,9 +288,13 @@ function MapPageInner() {
       let nearestErTotalMinutes: number | null = null;
       if (urgency !== "emergency" && facilities.length > 0) {
         try {
+          const erCtrl = new AbortController();
+          const erTimeout = setTimeout(() => erCtrl.abort(), 6_000);
           const erResp = await fetch(
-            `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=5&types=hospital,er`
+            `${API_URL}/care-options/?lat=${lat}&lng=${lng}&radius_km=75&limit=5&types=hospital,er`,
+            { signal: erCtrl.signal }
           );
+          clearTimeout(erTimeout);
           if (erResp.ok) {
             const erData: CareOptionsResponse = await erResp.json();
             const nearestEr = erData.facilities.find(
@@ -359,6 +364,20 @@ function MapPageInner() {
     const lat = center?.lat ?? 43.47;
     const lng = center?.lng ?? -80.54;
 
+    // Show the urgency verdict immediately — no API wait needed.
+    // severity is known from the questionnaire; facilities load async in background.
+    const instantUrgency: "emergency" | "urgent" | "low" =
+      (data.severity ?? 5) >= 8 ? "emergency" : (data.severity ?? 5) >= 5 ? "urgent" : "low";
+    const instantCareType =
+      instantUrgency === "emergency" ? "Emergency Room"
+        : instantUrgency === "urgent" ? "Urgent Care Centre"
+        : "Walk-in / Clinic";
+    setTriageResult({
+      urgency: instantUrgency,
+      careType: instantCareType,
+      summary: "Finding the best care options near you…",
+      facilities: [],
+    });
     setTriageOverlayPhase('analyzing');
     fetchCareOptions(lat, lng, data.severity);
 
@@ -1177,9 +1196,12 @@ function MapPageInner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           facility_id: facility.locationId ?? 0,
+          facility_name: facility.name,
           eta_minutes: etaMinutes,
           symptoms: symptomsArr,
           severity: userSeverity?.toString() ?? "3",
+          urgency_label: URGENCY_CONFIG[triageResult?.urgency ?? "low"].label,
+          care_type: triageResult?.careType ?? "General Care",
         }),
       });
       if (res.ok) {
@@ -1421,6 +1443,7 @@ function MapPageInner() {
       recommendation: {
         careType: triageResult?.careType || "General Care",
         summary: backboardData?.report?.clinical_picture ? `${backboardData.report.chief_complaint}: ${backboardData.report.clinical_picture}. ${backboardData.report.recommended_action}` : triageResult?.summary || "Please visit the facility for evaluation",
+        etaMinutes: facility.travelTimeMinutes ?? 15,
       },
       selectedFacility: {
         id: facility.id,
@@ -1854,7 +1877,8 @@ function MapPageInner() {
       {reportPreview && (
         <ReportPreviewModal
           report={reportPreview}
-          onConfirm={() => {
+          onConfirm={(patientId: string) => {
+            setSubmittedPatientId(patientId);
             setReportPreview(null);
             setShowSuccessModal(true);
           }}
@@ -1865,6 +1889,7 @@ function MapPageInner() {
       {showSuccessModal && selectedFacility && (
         <ReportSuccessModal
           facilityName={selectedFacility.name}
+          patientId={submittedPatientId}
           onClose={() => {
             setShowSuccessModal(false);
             setAllowReportSubmission(false);

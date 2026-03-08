@@ -15,5 +15,5 @@ export function getApiUrl(): string {
   return base;
 }
 
-/** Default fetch timeout (ms). Use longer for Render cold starts. */
-export const API_FETCH_TIMEOUT_MS = 60_000;
+/** Default fetch timeout (ms). Fail fast — urgency verdict is shown instantly from questionnaire data. */
+export const API_FETCH_TIMEOUT_MS = 8_000;

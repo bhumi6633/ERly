@@ -182,6 +182,7 @@ export interface MedicalReport {
     recommendation: {
         careType: string;
         summary: string;
+        etaMinutes?: number;
     };
     selectedFacility: {
         id: string;

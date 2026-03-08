@@ -122,7 +122,7 @@ export function TriageReasoningOverlay({ phase, questionnaireData, triageResult 
             count++;
             setVisibleCount(count);
             if (count >= steps.length) clearInterval(id);
-        }, 490);
+        }, 150);
         return () => clearInterval(id);
     }, [phase, steps.length]);
 

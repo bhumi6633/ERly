@@ -4,12 +4,14 @@ import { Check, Home, Navigation } from "lucide-react";
 
 interface ReportSuccessModalProps {
     facilityName: string;
+    patientId: string;
     onClose: () => void;
     onGoHome?: () => void;
 }
 
-export function ReportSuccessModal({ facilityName, onClose, onGoHome }: ReportSuccessModalProps) {
-    const token = Math.floor(10 + Math.random() * 90);
+export function ReportSuccessModal({ facilityName, patientId, onClose, onGoHome }: ReportSuccessModalProps) {
+    // patientId is "PT-XXXXXX" — show prefix + code separately
+    const [prefix, code] = patientId.includes("-") ? patientId.split("-") : ["PT", patientId];
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn">
@@ -51,7 +53,7 @@ export function ReportSuccessModal({ facilityName, onClose, onGoHome }: ReportSu
                             {/* Label row */}
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-[8px] uppercase tracking-[0.45em] font-black text-emerald-400/50">
-                                    Token No.
+                                    {prefix} · Patient Token
                                 </span>
                                 <div className="flex gap-1.5 items-center">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -60,16 +62,16 @@ export function ReportSuccessModal({ facilityName, onClose, onGoHome }: ReportSu
                                 </div>
                             </div>
 
-                            {/* Giant glowing token number */}
+                            {/* Giant glowing token code */}
                             <div className="flex items-center justify-center py-4">
                                 <span
-                                    className="text-emerald-400 font-mono text-[88px] font-black tabular-nums leading-none"
+                                    className="text-emerald-400 font-mono text-[56px] font-black tabular-nums leading-none tracking-widest"
                                     style={{
                                         textShadow:
                                             "0 0 30px rgba(16,185,129,0.7), 0 0 70px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15)",
                                     }}
                                 >
-                                    {token}
+                                    {code}
                                 </span>
                             </div>
                         </div>
