@@ -143,6 +143,23 @@
   background: radial-gradient(circle, var(--tw-gradient-stops));
 }
 
+/* ── Ambulance ETA popup (WebGL symbol layer callout) ─────────────────────── */
+.ambulance-eta-popup .mapboxgl-popup-content {
+  background: #ffffff;
+  border: 2.5px solid #22c55e;
+  border-radius: 12px;
+  padding: 5px 13px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.28), 0 0 0 4px rgba(34,197,94,0.18);
+  pointer-events: none;
+}
+.ambulance-eta-popup .mapboxgl-popup-tip {
+  border-top-color: #22c55e;
+}
+.ambulance-eta-popup .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: #22c55e;
+  border-bottom-color: transparent;
+}
+
 button {
   cursor: pointer !important;
 }
