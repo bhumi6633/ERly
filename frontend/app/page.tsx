@@ -3,7 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { ArrowRight, Activity, Moon, Sun, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  Activity,
+  Moon,
+  Sun,
+  ChevronDown,
+  Brain,
+  Building2,
+  Clock,
+  ClipboardList,
+  BarChart3,
+  HeartPulse,
+  type LucideIcon,
+} from "lucide-react";
 import { MobileWarningModal } from "@/components/modals/MobileWarningModal";
 import { useMobileCheck } from "@/hooks/useMobileCheck";
 import { AuthButton } from "@/components/auth-button";
@@ -15,46 +28,52 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: [0, 0, 0.2, 1] as const },
 };
 
-const CORE_FEATURES = [
+const CORE_FEATURES: {
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+  shape: string;
+  color: string;
+}[] = [
   {
     title: "AI Symptom Triage",
     desc: "Instant severity assessment",
-    icon: "🧠",
+    icon: Brain,
     shape: "droplet",
     color: "bg-blue-200",
   },
   {
     title: "Smart Hospital Routing",
     desc: "Find the best ER or clinic",
-    icon: "🏥",
+    icon: Building2,
     shape: "cross",
     color: "bg-yellow-200",
   },
   {
     title: "Real-Time Wait Times",
     desc: "Know before you go",
-    icon: "⏱️",
+    icon: Clock,
     shape: "blob",
     color: "bg-green-200",
   },
   {
     title: "Digital Pre-Check-In",
     desc: "Skip paperwork at arrival",
-    icon: "📋",
+    icon: ClipboardList,
     shape: "hexagon",
     color: "bg-purple-200",
   },
   {
     title: "Clinical Summary Generation",
     desc: "Doctors get your case instantly",
-    icon: "📊",
+    icon: BarChart3,
     shape: "star",
     color: "bg-indigo-200",
   },
   {
     title: "Vitals Monitoring",
     desc: "Continuous patient safety",
-    icon: "❤️",
+    icon: HeartPulse,
     shape: "circle",
     color: "bg-yellow-100",
   },
@@ -389,13 +408,23 @@ export default function Home() {
                     feature.shape === 'circle' ? 'justify-center py-8' :
                     'justify-center py-8'
                   }`}>
-                    <div className={`${
-                      feature.shape === 'cross' ? 'text-3xl mb-2' :
-                      feature.shape === 'blob' ? 'text-4xl mb-4' :
-                      feature.shape === 'star' ? 'text-3xl mb-3' :
-                      feature.shape === 'circle' ? 'text-3xl mb-3' :
-                      'text-3xl mb-3'
-                    }`}>{feature.icon}</div>
+                    <div className={`flex items-center justify-center text-gray-800 ${
+                      feature.shape === 'cross' ? 'mb-2' :
+                      feature.shape === 'blob' ? 'mb-4' :
+                      feature.shape === 'star' ? 'mb-3' :
+                      feature.shape === 'circle' ? 'mb-3' :
+                      'mb-3'
+                    }`}>
+                      {(() => {
+                        const Icon = feature.icon;
+                        return (
+                          <Icon
+                            className={feature.shape === 'blob' ? 'w-12 h-12' : 'w-10 h-10'}
+                            strokeWidth={2}
+                          />
+                        );
+                      })()}
+                    </div>
                     <h3 className={`font-bold text-gray-900 leading-tight mb-2 ${
                       feature.shape === 'cross' ? 'text-base' :
                       feature.shape === 'blob' ? 'text-lg' :
