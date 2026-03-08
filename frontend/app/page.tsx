@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { ArrowRight, Activity, Moon, Sun } from "lucide-react";
+import { ArrowRight, Activity, Moon, Sun, ChevronDown } from "lucide-react";
 import { MobileWarningModal } from "@/components/modals/MobileWarningModal";
 import { useMobileCheck } from "@/hooks/useMobileCheck";
 import { AuthButton } from "@/components/auth-button";
@@ -109,6 +109,11 @@ export default function Home() {
     }
   };
 
+  const scrollToCoreFeatures = () => {
+    const el = document.getElementById("core-features");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
@@ -133,27 +138,7 @@ export default function Home() {
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>ERly</span>
           </div>
-          <div className="flex items-center gap-6">
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Features
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Wait Times
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              About Us
-            </button>
-            <button className={`transition-colors text-sm font-medium ${
-              isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-            }`}>
-              Contact
-            </button>
+          <div className="flex items-center gap-4">
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-full transition-colors ${
@@ -172,7 +157,7 @@ export default function Home() {
       {/* Section 1: Hero with Doctors */}
       <section className="relative z-10 min-h-screen flex items-center justify-center pt-20 px-6">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.50fr_1fr] gap-12 items-center">
             {/* Male Doctor Photo - Left */}
             <motion.div
               className="flex justify-center lg:justify-end"
@@ -211,27 +196,18 @@ export default function Home() {
 
             {/* Center Content */}
             <motion.div
-              className="text-center lg:col-span-1"
+              className="text-center lg:col-span-1 w-full max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border text-sm font-medium mb-6 ${
-                isDarkMode 
-                  ? 'bg-teal-500/20 border-teal-500/30 text-teal-400' 
-                  : 'bg-teal-100 border-teal-200 text-teal-700'
-              }`}>
-                <Activity className="w-4 h-4" />
-                Healthcare Navigation
-              </div>
-
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight ${
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-snug ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                <span className="block mb-2">
+                <span className="block mb-3">
                   Your health isn&apos;t a dot on a map.
                 </span>
-                <span className={`block min-h-[1.2em] ${
+                <span className={`block min-h-[1.2em] mb-3 ${
                   isDarkMode 
                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400' 
                     : 'text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600'
@@ -244,7 +220,7 @@ export default function Home() {
                 </span>
               </h1>
 
-              <p className={`text-lg max-w-md mx-auto mb-8 leading-relaxed ${
+              <p className={`text-lg max-w-xl mx-auto mb-8 leading-relaxed ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Describe your symptoms and get matched with the best care option, from emergency rooms to telehealth.
@@ -311,10 +287,32 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
+        <motion.button
+          type="button"
+          onClick={scrollToCoreFeatures}
+          aria-label="Scroll to Core Features"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+          className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent ${
+            isDarkMode
+              ? "bg-white/10 backdrop-blur-md border border-white/20 shadow-black/20 hover:bg-white/15 hover:border-teal-400/40 text-white focus:ring-teal-400"
+              : "bg-white/80 backdrop-blur-md border border-gray-200/80 shadow-gray-400/20 hover:bg-white hover:border-teal-400/50 text-gray-700 focus:ring-teal-500"
+          }`}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.96 }}
+        >
+          <motion.span
+            animate={{ y: [0, 4, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-6 h-6" strokeWidth={2.5} />
+          </motion.span>
+        </motion.button>
       </section>
 
       {/* Section 2: Core Features */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6">
+      <section id="core-features" className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6 scroll-mt-4">
         <div className="max-w-6xl mx-auto w-full">
           <motion.div className="text-center mb-12" {...fadeInUp}>
             <h2 className={`text-3xl lg:text-4xl font-bold mb-4 ${
@@ -337,12 +335,12 @@ export default function Home() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ 
-                  duration: 0.5, 
+                transition={{
+                  duration: 0.5,
                   delay: idx * 0.1,
                 }}
               >
-                <div 
+                <div
                   className={`${feature.color} shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-white relative overflow-hidden ${
                     feature.shape === 'droplet' ? 'rounded-[50%_50%_50%_0%] w-56 h-64 rotate-[-45deg]' :
                     feature.shape === 'cross' ? 'rounded-2xl w-full max-w-[300px] h-56' :
@@ -360,20 +358,20 @@ export default function Home() {
                       <div className="absolute h-full w-[35%] bg-yellow-300 rounded-lg"></div>
                     </div>
                   )}
-                  
+
                   {/* Star shape background */}
                   {feature.shape === 'star' && (
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                       <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0" style={{ transform: 'scale(1.15)' }}>
-                        <polygon 
-                          points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35" 
-                          fill="currentColor" 
+                        <polygon
+                          points="50,5 61,35 95,35 67,55 78,85 50,65 22,85 33,55 5,35 39,35"
+                          fill="currentColor"
                           className="text-indigo-300"
                         />
                       </svg>
                     </div>
                   )}
-                  
+
                   {/* Hexagon clip path */}
                   {feature.shape === 'hexagon' && (
                     <div className="absolute inset-0 pointer-events-none" style={{
@@ -381,7 +379,7 @@ export default function Home() {
                       background: 'linear-gradient(135deg, rgba(192, 132, 252, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)'
                     }}></div>
                   )}
-                  
+
                   <div className={`relative z-10 flex flex-col items-center h-full text-center px-6 ${
                     feature.shape === 'droplet' ? 'rotate-[45deg]' : ''
                   } ${
@@ -423,6 +421,7 @@ export default function Home() {
           </div>
 
           {/* How We Navigate Section */}
+          <div id="how-we-navigate" className="relative scroll-mt-4">
           <motion.div className="text-center mb-12 mt-20" {...fadeInUp}>
             <h2 className={`text-3xl lg:text-5xl font-bold mb-4 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
@@ -564,11 +563,12 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+          </div>
         </div>
       </section>
 
       {/* Section 3: Mission Statement - Enhanced UI */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6">
+      <section id="mission" className="relative z-10 min-h-screen flex items-center justify-center py-20 px-6 scroll-mt-4">
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Enhanced Conversation Scene - Left */}
